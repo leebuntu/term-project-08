@@ -7,6 +7,7 @@ import com.leebuntu.server.db.core.Database;
 import com.leebuntu.server.db.core.DatabaseManager;
 import com.leebuntu.server.handler.admin.banking.AccountHandler;
 import com.leebuntu.server.handler.admin.customer.CustomerHandler;
+import com.leebuntu.server.handler.user.banking.LoanHandler;
 import com.leebuntu.server.handler.user.banking.TransactionHandler;
 import com.leebuntu.server.handler.user.customer.LoginHandler;
 
@@ -14,8 +15,9 @@ import java.io.IOException;
 
 class ServerMain {
     private static void buildDB() {
+        boolean isNew = true;
         try {
-            DBBuild.buildUsersDB();
+            isNew = DBBuild.buildUsersDB();
             DBBuild.buildAccountsDB();
             DBBuild.buildTransactionsDB();
         } catch (IOException e) {
@@ -23,7 +25,9 @@ class ServerMain {
             System.exit(-1);
         }
 
-        registerAdmin();
+        if (isNew) {
+            registerAdmin();
+        }
     }
 
     private static void registerAdmin() {
@@ -34,7 +38,7 @@ class ServerMain {
 
     public static void main(String[] args) throws Exception {
 
-        // buildDB();
+        buildDB();
 
         Router router = new Router(8080);
 
@@ -64,6 +68,9 @@ class ServerMain {
         router.addRoute("/banking/transaction/get",
                 TransactionHandler.getTransactions(),
                 JWTMiddleware.getJWTMiddleware());
+
+        router.addRoute("/banking/loan/creditScore", LoanHandler.getCreditScore(), JWTMiddleware.getJWTMiddleware());
+        router.addRoute("/banking/loan/takeOut", LoanHandler.takeOutLoan(), JWTMiddleware.getJWTMiddleware());
 
         router.start();
     }

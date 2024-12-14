@@ -1,5 +1,7 @@
 package com.leebuntu.manager;
 
+import com.leebuntu.common.banking.BankingResult;
+import com.leebuntu.common.banking.BankingResult.BankingResultType;
 import com.leebuntu.common.banking.account.Account;
 import com.leebuntu.common.banking.account.AccountType;
 import com.leebuntu.common.banking.customer.Customer;
@@ -106,10 +108,11 @@ public class BankManagerTablePanel {
 
     ArrayList<String[]> getCustomers() {
         ArrayList<String[]> customerData = new ArrayList<>();
-        List<Customer> customers = BankManagerConnector.getCustomers(token);
-        if (customers == null) {
+        BankingResult result = BankManagerConnector.getCustomers(token);
+        if (result.getType() != BankingResultType.SUCCESS) {
             return null;
         }
+        List<Customer> customers = (List<Customer>) result.getData();
         for (Customer customer : customers) {
             customerData.add(new String[] { String.valueOf(customer.getId()),
                     customer.getName(),
@@ -123,17 +126,18 @@ public class BankManagerTablePanel {
 
     ArrayList<String[]> getAccounts() {
         ArrayList<String[]> accountData = new ArrayList<>();
-        List<Account> accounts = BankManagerConnector.getAccounts(token);
-        if (accounts == null) {
+        BankingResult result = BankManagerConnector.getAccounts(token);
+        if (result.getType() != BankingResultType.SUCCESS) {
             return null;
         }
+        List<Account> accounts = (List<Account>) result.getData();
         for (Account account : accounts) {
             accountData.add(new String[] { String.valueOf(account.getId()),
                     String.valueOf(account.getCustomerId()), account.getAccountNumber(),
                     String.valueOf(account.getTotalBalance()),
                     String.valueOf(account.getAvailableBalance()),
                     Instant.ofEpochMilli(account.getOpenDate()).toString(),
-                    String.valueOf(account.getLinkedSavingsAccountNumber()),
+                    account.getLinkedSavingsAccountNumber(),
                     String.valueOf(account.getInterestRate()),
                     String.valueOf(account.getMaxTransferAmountToChecking()) });
         }
@@ -182,15 +186,23 @@ public class BankManagerTablePanel {
 
     public void addAccount(int userId, String[] accountData) {
         if (accountData.length == 4) { // 당좌 계좌
-            Account account = new Account(userId,
-                    accountData[0], Long.parseLong(accountData[1]), Long.parseLong(accountData[2]),
-                    (long) 0, AccountType.CHECKING, Integer.parseInt(accountData[3]));
+            Account account = new Account();
+            account.setCustomerId(userId);
+            account.setAccountNumber(accountData[0]);
+            account.setTotalBalance(Long.parseLong(accountData[1]));
+            account.setAvailableBalance(Long.parseLong(accountData[2]));
+            account.setAccountType(AccountType.CHECKING);
+            account.setLinkedSavingsAccountNumber(accountData[3]);
             BankManagerConnector.createCheckingAccount(token, account);
         } else { // 저축 계좌
-            Account account = new Account(userId,
-                    accountData[0], Long.parseLong(accountData[1]), Long.parseLong(accountData[2]),
-                    (long) 0, AccountType.SAVINGS, Double.parseDouble(accountData[3]),
-                    Long.parseLong(accountData[4]));
+            Account account = new Account();
+            account.setCustomerId(userId);
+            account.setAccountNumber(accountData[0]);
+            account.setTotalBalance(Long.parseLong(accountData[1]));
+            account.setAvailableBalance(Long.parseLong(accountData[2]));
+            account.setAccountType(AccountType.SAVINGS);
+            account.setInterestRate(Double.parseDouble(accountData[3]));
+            account.setMaxTransferAmountToChecking(Long.parseLong(accountData[4]));
             BankManagerConnector.createSavingsAccount(token, account);
         }
     }

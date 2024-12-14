@@ -169,16 +169,16 @@ public class DataFileManager {
 
 	public boolean update(Query query) throws IOException, ClassCastException {
 		synchronized (writeLock) {
-			if (!cacheManager.isExistPK(query.getTableName(), query.getWhereKey())) {
-				return false;
-			}
-
 			Table table = metadata.getTable(query.getTableName());
 			int whereColumnIndex = table.getColumnIndex(query.getWhereColumnName());
 			byte[] whereKeyBytes = ConvertUtil.columnToBytes(query.getWhereKey(), table.getColumn(whereColumnIndex));
 			List<Integer> targetColumnIndices = getTargetColumnIndices(table, query);
 
 			if (table.isPrimaryKey(whereColumnIndex)) {
+				if (!cacheManager.isExistPK(query.getTableName(), query.getWhereKey())) {
+					return false;
+				}
+
 				Long offset = cacheManager.getPKOffset(query.getTableName(), query.getWhereKey());
 				offset += metadataSize;
 
@@ -220,10 +220,12 @@ public class DataFileManager {
 
 						if (!record.isDeletedRecord() &&
 								recordMatches(record, whereColumnIndex, whereKeyBytes, query.getTableName())) {
+							int tIndex = 0;
 							for (int index : targetColumnIndices) {
-								byte[] newData = ConvertUtil.columnToBytes(query.getParameters().get(index),
+								byte[] newData = ConvertUtil.columnToBytes(query.getParameters().get(tIndex),
 										table.getColumn(index));
 								record.updateData(index, newData);
+								tIndex++;
 							}
 
 							dbFile.seek(recordStart);

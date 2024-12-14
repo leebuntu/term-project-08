@@ -1,5 +1,7 @@
 package com.leebuntu.manager;
 
+import com.leebuntu.common.banking.BankingResult;
+import com.leebuntu.common.banking.BankingResult.BankingResultType;
 import com.leebuntu.common.banking.account.Account;
 import com.leebuntu.common.banking.customer.Customer;
 import com.leebuntu.common.communication.Connector;
@@ -11,89 +13,114 @@ import com.leebuntu.common.communication.dto.request.customer.CreateCustomer;
 import com.leebuntu.common.communication.dto.response.banking.Accounts;
 import com.leebuntu.common.communication.dto.response.customer.Customers;
 
-import java.util.List;
-
 public class BankManagerConnector {
     private static Connector connector = new Connector("localhost", 8080);
 
-    public static List<Customer> getCustomers(String token) {
-        connector.send("/admin/customers/get", token, null);
+    public static BankingResult getCustomers(String token) {
+        if (!connector.send("/admin/customers/get", token, null)) {
+            return new BankingResult(BankingResultType.INTERNAL_ERROR, "서버에 연결할 수 없습니다.");
+        }
 
         Customers customers = new Customers();
-        connector.receiveAndBind(customers);
+        if (!connector.receiveAndBind(customers)) {
+            return new BankingResult(BankingResultType.INTERNAL_ERROR, "서버에 연결할 수 없습니다.");
+        }
 
-        return customers.getCustomers();
+        return new BankingResult(BankingResultType.SUCCESS, "고객 조회 성공", customers.getCustomers());
     }
 
-    public static List<Account> getAccounts(String token) {
-        connector.send("/admin/accounts/get/all", token, null);
+    public static BankingResult getAccounts(String token) {
+        if (!connector.send("/admin/accounts/get/all", token, null)) {
+            return new BankingResult(BankingResultType.INTERNAL_ERROR, "서버에 연결할 수 없습니다.");
+        }
 
         Accounts accounts = new Accounts();
-        connector.receiveAndBind(accounts);
+        if (!connector.receiveAndBind(accounts)) {
+            return new BankingResult(BankingResultType.INTERNAL_ERROR, "서버에 연결할 수 없습니다.");
+        }
 
-        return accounts.getAccounts();
+        return new BankingResult(BankingResultType.SUCCESS, "계좌 조회 성공", accounts.getAccounts());
     }
 
-    public static String login(String username, String password) {
+    public static BankingResult login(String username, String password) {
         Login login = new Login(username, password);
 
-        connector.send("/login", null, login);
+        if (!connector.send("/login", null, login)) {
+            return new BankingResult(BankingResultType.INTERNAL_ERROR, "서버에 연결할 수 없습니다.");
+        }
 
         Response response = new Response();
-        connector.receiveAndBind(response);
+        if (!connector.receiveAndBind(response)) {
+            return new BankingResult(BankingResultType.INTERNAL_ERROR, "서버에 연결할 수 없습니다.");
+        }
 
         if (response.getStatus() == Status.SUCCESS) {
-            return response.getMessage();
+            return new BankingResult(BankingResultType.SUCCESS, "로그인 성공", response.getMessage());
         } else {
-            return null;
+            return new BankingResult(BankingResultType.FAILED, response.getMessage());
         }
     }
 
-    public static boolean createCustomer(String token, String customerId, String name, String password, String address,
-            String phone) {
-        CreateCustomer createCustomer = new CreateCustomer(customerId, name, password, address, phone);
-        connector.send("/admin/customers/create", token, createCustomer);
+    public static BankingResult createCustomer(String token, String customerId, String password, String name,
+            String address, String phone) {
+        Customer customer = new Customer();
+        customer.setCustomerId(customerId);
+        customer.setPassword(password);
+        customer.setName(name);
+        customer.setAddress(address);
+        customer.setPhone(phone);
+
+        CreateCustomer createCustomer = new CreateCustomer(customer);
+        if (!connector.send("/admin/customers/create", token, createCustomer)) {
+            return new BankingResult(BankingResultType.INTERNAL_ERROR, "서버에 연결할 수 없습니다.");
+        }
 
         Response response = new Response();
-        connector.receiveAndBind(response);
+        if (!connector.receiveAndBind(response)) {
+            return new BankingResult(BankingResultType.INTERNAL_ERROR, "서버에 연결할 수 없습니다.");
+        }
+
         if (response.getStatus() == Status.SUCCESS) {
-            return true;
+            return new BankingResult(BankingResultType.SUCCESS, "고객 생성 성공");
         } else {
-            return false;
+            return new BankingResult(BankingResultType.FAILED, response.getMessage());
         }
     }
 
-    public static boolean createCheckingAccount(String token, Account account) {
-        CreateAccount createCheckingAccount = new CreateAccount(account.getCustomerId(),
-                account.getAccountNumber(), account.getTotalBalance(),
-                account.getAvailableBalance(),
-                account.getAccountType(), account.getLinkedSavingsAccountNumber());
-
-        connector.send("/admin/accounts/create", token, createCheckingAccount);
+    public static BankingResult createCheckingAccount(String token, Account account) {
+        CreateAccount createCheckingAccount = new CreateAccount(account);
+        if (!connector.send("/admin/accounts/create", token, createCheckingAccount)) {
+            return new BankingResult(BankingResultType.INTERNAL_ERROR, "서버에 연결할 수 없습니다.");
+        }
 
         Response response = new Response();
-        connector.receiveAndBind(response);
+        if (!connector.receiveAndBind(response)) {
+            return new BankingResult(BankingResultType.INTERNAL_ERROR, "서버에 연결할 수 없습니다.");
+        }
+
         if (response.getStatus() == Status.SUCCESS) {
-            return true;
+            return new BankingResult(BankingResultType.SUCCESS, "계좌 생성 성공");
         } else {
-            return false;
+            return new BankingResult(BankingResultType.FAILED, response.getMessage());
         }
     }
 
-    public static boolean createSavingsAccount(String token, Account account) {
-        CreateAccount createSavingsAccount = new CreateAccount(account.getCustomerId(),
-                account.getAccountNumber(), account.getTotalBalance(),
-                account.getAvailableBalance(), account.getAccountType(),
-                account.getInterestRate(), account.getMaxTransferAmountToChecking());
+    public static BankingResult createSavingsAccount(String token, Account account) {
+        CreateAccount createSavingsAccount = new CreateAccount(account);
 
-        connector.send("/admin/accounts/create", token, createSavingsAccount);
+        if (!connector.send("/admin/accounts/create", token, createSavingsAccount)) {
+            return new BankingResult(BankingResultType.INTERNAL_ERROR, "서버에 연결할 수 없습니다.");
+        }
 
         Response response = new Response();
-        connector.receiveAndBind(response);
+        if (!connector.receiveAndBind(response)) {
+            return new BankingResult(BankingResultType.INTERNAL_ERROR, "서버에 연결할 수 없습니다.");
+        }
+
         if (response.getStatus() == Status.SUCCESS) {
-            return true;
+            return new BankingResult(BankingResultType.SUCCESS, "계좌 생성 성공");
         } else {
-            return false;
+            return new BankingResult(BankingResultType.FAILED, response.getMessage());
         }
     }
 }

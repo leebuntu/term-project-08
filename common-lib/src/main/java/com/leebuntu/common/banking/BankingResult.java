@@ -9,7 +9,8 @@ public class BankingResult {
         NOT_AUTHORIZED,
         INVALID_REQUEST,
         INSUFFICIENT_FUNDS,
-        NEED_TO_SAVINGS_ACCOUNT
+        NEED_TO_SAVINGS_ACCOUNT,
+        DUPLICATED,
     }
 
     private BankingResultType type;
@@ -38,4 +39,10 @@ public class BankingResult {
     public Object getData() {
         return data;
     }
+
+    public String getFineMessage() {
+        String msg = this.type.name() + ": " + this.message;
+        return msg;
+    }
+
 }

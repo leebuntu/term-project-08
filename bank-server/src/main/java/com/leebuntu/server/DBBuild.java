@@ -9,7 +9,7 @@ import java.io.IOException;
 
 public class DBBuild {
 
-    public static void buildUsersDB() throws IOException {
+    public static boolean buildUsersDB() throws IOException {
         DatabaseBuilder builder = new DatabaseBuilder();
 
         Table userTable = new Table("user");
@@ -25,10 +25,10 @@ public class DBBuild {
         userInfoTable.addColumn(new Column(ColumnType.VARCHAR, 16, "phone"));
         userInfoTable.addColumn(new Column(ColumnType.INT, "credit_score"));
 
-        builder.setDatabaseName("customers").addTable(userTable).addTable(userInfoTable).create();
+        return builder.setDatabaseName("customers").addTable(userTable).addTable(userInfoTable).create();
     }
 
-    public static void buildAccountsDB() throws IOException {
+    public static boolean buildAccountsDB() throws IOException {
         DatabaseBuilder builder = new DatabaseBuilder();
 
         Table accountTable = new Table("checking_account");
@@ -38,7 +38,7 @@ public class DBBuild {
         accountTable.addColumn(new Column(ColumnType.LONG, "total_balance"));
         accountTable.addColumn(new Column(ColumnType.LONG, "available_balance"));
         accountTable.addColumn(new Column(ColumnType.LONG, "open_date"));
-        accountTable.addColumn(new Column(ColumnType.INT, "linked_savings_id"));
+        accountTable.addColumn(new Column(ColumnType.VARCHAR, 20, "linked_savings_account_number"));
 
         Table savingsAccountTable = new Table("savings_account");
         savingsAccountTable.addColumn(new Column(ColumnType.INT, true, "id"));
@@ -50,18 +50,18 @@ public class DBBuild {
         savingsAccountTable.addColumn(new Column(ColumnType.DOUBLE, "interest_rate"));
         savingsAccountTable.addColumn(new Column(ColumnType.LONG, "max_transfer_amount_to_checking"));
 
-        builder.setDatabaseName("accounts").addTable(accountTable).addTable(savingsAccountTable).create();
+        return builder.setDatabaseName("accounts").addTable(accountTable).addTable(savingsAccountTable).create();
     }
 
-    public static void buildTransactionsDB() throws IOException {
+    public static boolean buildTransactionsDB() throws IOException {
         DatabaseBuilder builder = new DatabaseBuilder();
 
         Table checkingTransactionTable = new Table("checking_transaction");
         checkingTransactionTable.addColumn(new Column(ColumnType.INT, true, "id"));
         checkingTransactionTable.addColumn(new Column(ColumnType.INT, "sender_id"));
         checkingTransactionTable.addColumn(new Column(ColumnType.INT, "receiver_id"));
-        checkingTransactionTable.addColumn(new Column(ColumnType.INT, "sender_account_id"));
-        checkingTransactionTable.addColumn(new Column(ColumnType.INT, "receiver_account_id"));
+        checkingTransactionTable.addColumn(new Column(ColumnType.VARCHAR, 20, "sender_account_number"));
+        checkingTransactionTable.addColumn(new Column(ColumnType.VARCHAR, 20, "receiver_account_number"));
         checkingTransactionTable.addColumn(new Column(ColumnType.LONG, "amount"));
         checkingTransactionTable.addColumn(new Column(ColumnType.LONG, "date"));
 
@@ -69,12 +69,28 @@ public class DBBuild {
         savingsTransactionTable.addColumn(new Column(ColumnType.INT, true, "id"));
         savingsTransactionTable.addColumn(new Column(ColumnType.INT, "sender_id"));
         savingsTransactionTable.addColumn(new Column(ColumnType.INT, "receiver_id"));
-        savingsTransactionTable.addColumn(new Column(ColumnType.INT, "sender_account_id"));
-        savingsTransactionTable.addColumn(new Column(ColumnType.INT, "receiver_account_id"));
+        savingsTransactionTable.addColumn(new Column(ColumnType.VARCHAR, 20, "sender_account_number"));
+        savingsTransactionTable.addColumn(new Column(ColumnType.VARCHAR, 20, "receiver_account_number"));
         savingsTransactionTable.addColumn(new Column(ColumnType.LONG, "amount"));
         savingsTransactionTable.addColumn(new Column(ColumnType.LONG, "date"));
 
-        builder.setDatabaseName("transactions").addTable(checkingTransactionTable).addTable(savingsTransactionTable)
+        return builder.setDatabaseName("transactions").addTable(checkingTransactionTable)
+                .addTable(savingsTransactionTable)
                 .create();
+    }
+
+    public static boolean buildLoansDB() throws IOException {
+        DatabaseBuilder builder = new DatabaseBuilder();
+
+        Table loanTable = new Table("loan");
+        loanTable.addColumn(new Column(ColumnType.INT, true, "id"));
+        loanTable.addColumn(new Column(ColumnType.INT, "customer_id"));
+        loanTable.addColumn(new Column(ColumnType.VARCHAR, 20, "account_number"));
+        loanTable.addColumn(new Column(ColumnType.LONG, "amount"));
+        loanTable.addColumn(new Column(ColumnType.LONG, "date"));
+        loanTable.addColumn(new Column(ColumnType.LONG, "due_date"));
+        loanTable.addColumn(new Column(ColumnType.LONG, "interest_rate"));
+
+        return builder.setDatabaseName("loans").addTable(loanTable).create();
     }
 }

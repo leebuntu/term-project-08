@@ -1,6 +1,10 @@
 package com.leebuntu.manager;
 
 import javax.swing.*;
+
+import com.leebuntu.common.banking.BankingResult;
+import com.leebuntu.common.banking.BankingResult.BankingResultType;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -106,11 +110,11 @@ public class BankManagerButtonPanel implements ActionListener {
                     if (username.isEmpty() || password.isEmpty()) {
                         JOptionPane.showMessageDialog(null, "아이디와 비밀번호를 입력해주세요.", "입력 오류", JOptionPane.ERROR_MESSAGE);
                     } else {
-                        String result = BankManagerConnector.login(username, password);
-                        if (result != null) {
+                        BankingResult result = BankManagerConnector.login(username, password);
+                        if (result.getType() == BankingResultType.SUCCESS) {
                             JOptionPane.showMessageDialog(null, "로그인 성공: " + username, "로그인 완료",
                                     JOptionPane.INFORMATION_MESSAGE);
-                            token = result;
+                            token = (String) result.getData();
                             tablePanel.token = token;
                             isLoggedIn = true;
                         } else {
@@ -224,7 +228,7 @@ public class BankManagerButtonPanel implements ActionListener {
                     );
                     if (selectedOption != null && selectedOption == "당좌계좌") {
                         String[] accountPrompt = { "account_number", "total_balance",
-                                "available_balance", "linked_savings_id" };
+                                "available_balance", "linked_savings_account_number" };
                         String[] accountData = new String[accountPrompt.length];
                         for (int i = 0; i < accountPrompt.length; i++) {
                             accountData[i] = JOptionPane.showInputDialog(null, accountPrompt[i] + "을(를) 입력하세요:",
@@ -236,6 +240,7 @@ public class BankManagerButtonPanel implements ActionListener {
                                 return;
                             }
                         }
+                        accountData[3] = accountData[3].replaceAll("null", "");
                         tablePanel.addAccount(selectedUser, accountData);
                     } else {
                         String[] accountPrompt = { "account_number", "total_balance",

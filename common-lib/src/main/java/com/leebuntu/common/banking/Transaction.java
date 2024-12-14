@@ -1,21 +1,19 @@
 package com.leebuntu.common.banking;
 
-import java.time.Instant;
-
 public class Transaction {
     private int senderId;
     private int receiverId;
-    private int senderAccountId;
-    private int receiverAccountId;
+    private String senderAccountNumber;
+    private String receiverAccountNumber;
     private Long amount;
-    private Instant date;
+    private Long date;
 
-    public Transaction(int senderId, int receiverId, int senderAccountId, int receiverAccountId, Long amount,
-            Instant date) {
+    public Transaction(int senderId, int receiverId, String senderAccountNumber, String receiverAccountNumber,
+            Long amount, Long date) {
         this.senderId = senderId;
         this.receiverId = receiverId;
-        this.senderAccountId = senderAccountId;
-        this.receiverAccountId = receiverAccountId;
+        this.senderAccountNumber = senderAccountNumber;
+        this.receiverAccountNumber = receiverAccountNumber;
         this.amount = amount;
         this.date = date;
     }
@@ -35,15 +33,15 @@ public class Transaction {
         return amount;
     }
 
-    public Instant getDate() {
+    public Long getDate() {
         return date;
     }
 
-    public int getSenderAccountId() {
-        return senderAccountId;
+    public String getSenderAccountNumber() {
+        return senderAccountNumber;
     }
 
-    public int getReceiverAccountId() {
-        return receiverAccountId;
+    public String getReceiverAccountNumber() {
+        return receiverAccountNumber;
     }
 }

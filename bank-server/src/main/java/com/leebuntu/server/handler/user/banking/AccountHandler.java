@@ -2,6 +2,7 @@ package com.leebuntu.server.handler.user.banking;
 
 import com.leebuntu.common.banking.BankingResult;
 import com.leebuntu.common.banking.BankingResult.BankingResultType;
+import com.leebuntu.common.banking.Transaction;
 import com.leebuntu.common.banking.account.Account;
 import com.leebuntu.common.banking.account.AccountType;
 import com.leebuntu.common.communication.dto.Response;
@@ -10,68 +11,47 @@ import com.leebuntu.common.communication.dto.request.banking.DepositWithdraw;
 import com.leebuntu.common.communication.dto.request.banking.Transfer;
 import com.leebuntu.common.communication.dto.response.banking.Accounts;
 import com.leebuntu.common.communication.router.ContextHandler;
+import com.leebuntu.provider.AccountProvider;
+import com.leebuntu.provider.TransactionProvider;
 import com.leebuntu.server.db.core.Database;
 import com.leebuntu.server.db.core.DatabaseManager;
 import com.leebuntu.server.db.query.QueryResult;
 import com.leebuntu.server.db.query.enums.QueryStatus;
-import com.leebuntu.server.handler.util.Utils;
 
-import java.util.ArrayList;
+import java.time.Instant;
 import java.util.List;
 
 public class AccountHandler {
     private static final Database accountDB = DatabaseManager.getDB("accounts");
 
-    public static ContextHandler withdraw() { // 초반 7일은 withdraw 불가능
+    public static ContextHandler withdraw() {
         return (context) -> {
             int userId = (int) context.getField("userId");
 
             DepositWithdraw request = new DepositWithdraw();
             if (context.bind(request)) {
-                int accountId = -1;
-                Long totalBalance = 0L;
-                Long availableBalance = 0L;
-
-                AccountType accountType = Utils.getAccountType(request.getAccountNumber());
-                String accountTypeString = accountType.name().toLowerCase();
-
-                String query = "SELECT id, customer_id, total_balance, available_balance FROM "
-                        + accountTypeString + "_account WHERE account_number = ?";
-                QueryResult result = accountDB.execute(query, request.getAccountNumber());
-
-                if (result.getQueryStatus() != QueryStatus.SUCCESS) {
-                    context.reply(new Response(Status.FAILED,
-                            "Failed to get " + accountTypeString + " account"));
+                if (!AccountProvider.isAcountOwner(request.getAccountNumber(), userId)) {
+                    context.reply(new Response(Status.NOT_AUTHORIZED, "Unauthorized"));
                     return;
                 }
 
-                if ((int) result.getCurrentRow().get(1) == userId) {
-                    accountId = (int) result.getCurrentRow().get(0);
-                    totalBalance = (Long) result.getCurrentRow().get(2);
-                    availableBalance = (Long) result.getCurrentRow().get(3);
+                Account account = AccountProvider.getAccount(request.getAccountNumber());
+                if (account == null) {
+                    context.reply(new Response(Status.FAILED, "Account not found"));
+                    return;
                 }
 
-                if (availableBalance < request.getAmount()) {
+                if (account.getTotalBalance() >= request.getAmount()
+                        && account.getAvailableBalance() >= request.getAmount()) {
+                    if (AccountProvider.updateAccountBalance(request.getAccountNumber(),
+                            account.getTotalBalance() - request.getAmount())) {
+                        context.reply(new Response(Status.SUCCESS, "Withdraw successful"));
+                    } else {
+                        context.reply(new Response(Status.FAILED, "Failed to update account balance"));
+                    }
+                } else {
                     context.reply(new Response(Status.FAILED, "Insufficient funds"));
-                    return;
                 }
-
-                if (totalBalance < request.getAmount()) {
-                    context.reply(new Response(Status.FAILED, "Insufficient funds"));
-                    return;
-                }
-
-                totalBalance -= request.getAmount();
-
-                query = "UPDATE FROM " + accountTypeString + "_account total_balance = ? WHERE id = ?";
-                QueryResult result2 = accountDB.execute(query, totalBalance, accountId);
-
-                if (result2.getQueryStatus() != QueryStatus.SUCCESS) {
-                    context.reply(new Response(Status.FAILED, "Failed to update " + accountTypeString + " account"));
-                    return;
-                }
-
-                context.reply(new Response(Status.SUCCESS, "Withdrawal successful"));
             } else {
                 context.reply(new Response(Status.FAILED, "Failed to bind request"));
             }
@@ -84,155 +64,100 @@ public class AccountHandler {
 
             DepositWithdraw request = new DepositWithdraw();
             if (context.bind(request)) {
-                int accountId = 0;
-                Long totalBalance = 0L;
-
-                AccountType accountType = Utils.getAccountType(request.getAccountNumber());
-                String accountTypeString = accountType.name().toLowerCase();
-
-                String query = "SELECT id, customer_id, total_balance FROM "
-                        + accountTypeString + "_account WHERE account_number = ?";
-                QueryResult result = accountDB.execute(query, request.getAccountNumber());
-
-                if (result.getQueryStatus() != QueryStatus.SUCCESS) {
-                    context.reply(new Response(Status.FAILED, "Failed to get " + accountTypeString + " account"));
+                if (!AccountProvider.isAcountOwner(request.getAccountNumber(), userId)) {
+                    context.reply(new Response(Status.NOT_AUTHORIZED, "Unauthorized"));
                     return;
                 }
 
-                if ((int) result.getCurrentRow().get(1) == userId) {
-                    accountId = (int) result.getCurrentRow().get(0);
-                    totalBalance = (Long) result.getCurrentRow().get(2);
-                }
-
-                totalBalance += request.getAmount();
-
-                query = "UPDATE FROM " + accountTypeString + "_account total_balance = ? WHERE id = ?";
-                QueryResult result2 = accountDB.execute(query, totalBalance, accountId);
-
-                if (result2.getQueryStatus() != QueryStatus.SUCCESS) {
-                    context.reply(new Response(Status.FAILED, "Failed to update " + accountTypeString + " account"));
+                Account account = AccountProvider.getAccount(request.getAccountNumber());
+                if (account == null) {
+                    context.reply(new Response(Status.FAILED, "Account not found"));
                     return;
                 }
 
-                context.reply(new Response(Status.SUCCESS, "Deposit successful"));
+                if (AccountProvider.updateAccountBalance(request.getAccountNumber(),
+                        account.getTotalBalance() + request.getAmount())) {
+                    context.reply(new Response(Status.SUCCESS, "Deposit successful"));
+                } else {
+                    context.reply(new Response(Status.FAILED, "Failed to update account balance"));
+                }
             } else {
                 context.reply(new Response(Status.FAILED, "Failed to bind request"));
             }
         };
     }
 
-    private static BankingResult isMoneySufficient(Long totalBalance, Long availableBalance, Long amount,
-            int linkedSavingAccountId) {
-        if (totalBalance >= amount && availableBalance >= amount) {
+    private static BankingResult checkMoneySufficient(Account account, Account receiverAccount, Long amount) {
+        if (account.getTotalBalance() >= amount && account.getAvailableBalance() >= amount) {
             return new BankingResult(BankingResultType.SUCCESS, "Money is sufficient");
         } else {
-            if (linkedSavingAccountId > -1) {
-                String query = "SELECT total_balance, max_transfer_amount_to_checking FROM savings_account WHERE id = ?";
-                QueryResult result = accountDB.execute(query, linkedSavingAccountId);
-
-                if (result.getQueryStatus() != QueryStatus.SUCCESS) {
-                    return new BankingResult(BankingResultType.FAILED, "Failed to get savings account");
-                }
-
-                Long savingTotalBalance = (Long) result.getCurrentRow().get(0);
-                Long maxTransferAmountToChecking = (Long) result.getCurrentRow().get(1);
-
-                Long canTransferAmount = Math.min(totalBalance, availableBalance);
-
-                Long remainingAmount = amount - canTransferAmount;
-
-                if (savingTotalBalance >= remainingAmount && maxTransferAmountToChecking >= remainingAmount) {
+            if (account.getLinkedSavingsAccountNumber() != null) {
+                Account savingsAccount = AccountProvider.getAccount(account.getLinkedSavingsAccountNumber());
+                if (savingsAccount.getTotalBalance() >= amount
+                        && savingsAccount.getMaxTransferAmountToChecking() >= amount) {
                     return new BankingResult(BankingResultType.NEED_TO_SAVINGS_ACCOUNT, "Money is sufficient",
-                            linkedSavingAccountId);
+                            account.getLinkedSavingsAccountNumber());
                 }
             }
         }
 
         return new BankingResult(BankingResultType.FAILED, "Money is insufficient");
-
     }
 
-    private static BankingResult updateAccount(int accountId, int receiverAccountId, Long amount) {
-        String query = "SELECT total_balance, available_balance, linked_savings_id FROM checking_account WHERE id = ?";
-        QueryResult result = accountDB.execute(query, accountId);
-
-        if (result.getQueryStatus() != QueryStatus.SUCCESS) {
-            return new BankingResult(BankingResultType.FAILED, "Failed to get checking account");
-        }
-
-        Long totalBalance = (Long) result.getCurrentRow().get(0);
-        Long availableBalance = (Long) result.getCurrentRow().get(1);
-        int linkedSavingsId = (int) result.getCurrentRow().get(2);
-
-        query = "SELECT total_balance FROM checking_account WHERE id = ?";
-        result = accountDB.execute(query, receiverAccountId);
-
-        if (result.getQueryStatus() != QueryStatus.SUCCESS) {
-            return new BankingResult(BankingResultType.FAILED, "Failed to get checking account");
-        }
-
-        Long receiverTotalBalance = (Long) result.getCurrentRow().get(0);
-
-        BankingResult moneyStatus = isMoneySufficient(totalBalance, availableBalance, amount, linkedSavingsId);
+    private static BankingResult updateAccount(Account account, Account receiverAccount, Long amount) {
+        BankingResult moneyStatus = checkMoneySufficient(account, receiverAccount, amount);
 
         if (moneyStatus.getType() == BankingResultType.SUCCESS) {
-            totalBalance -= amount;
-            receiverTotalBalance += amount;
+            account.setTotalBalance(account.getTotalBalance() - amount);
+            receiverAccount.setTotalBalance(receiverAccount.getTotalBalance() + amount);
 
-            query = "UPDATE FROM checking_account total_balance = ? WHERE id = ?";
-            result = accountDB.execute(query, totalBalance, accountId);
+            if (AccountProvider.updateAccountBalance(account.getAccountNumber(), account.getTotalBalance()) &&
+                    AccountProvider.updateAccountBalance(receiverAccount.getAccountNumber(),
+                            receiverAccount.getTotalBalance())) {
+                Long currentTime = Instant.now().toEpochMilli();
+                Transaction transaction = new Transaction(account.getCustomerId(), receiverAccount.getCustomerId(),
+                        account.getAccountNumber(), receiverAccount.getAccountNumber(), amount,
+                        currentTime);
+                TransactionProvider.addTransaction(transaction);
 
-            if (result.getQueryStatus() != QueryStatus.SUCCESS) {
-                return new BankingResult(BankingResultType.FAILED, "Failed to update checking account");
-            }
-
-            query = "UPDATE FROM checking_account total_balance = ? WHERE id = ?";
-            result = accountDB.execute(query, receiverTotalBalance, receiverAccountId);
-
-            if (result.getQueryStatus() != QueryStatus.SUCCESS) {
-                return new BankingResult(BankingResultType.FAILED, "Failed to update checking account");
+                return new BankingResult(BankingResultType.SUCCESS, "Transfer successful");
             }
         } else if (moneyStatus.getType() == BankingResultType.NEED_TO_SAVINGS_ACCOUNT) {
-            Long canTransferAmount = Math.min(totalBalance, availableBalance);
+            Account savingsAccount = AccountProvider.getAccount(account.getLinkedSavingsAccountNumber());
+
+            Long canTransferAmount = Math.min(account.getTotalBalance(), account.getAvailableBalance());
             Long remainingAmount = amount - canTransferAmount;
-            totalBalance = 0L;
-            receiverTotalBalance += amount;
 
-            query = "UPDATE FROM checking_account total_balance = ? WHERE id = ?";
-            result = accountDB.execute(query, totalBalance, accountId);
+            account.setTotalBalance(0L);
+            savingsAccount.setTotalBalance(savingsAccount.getTotalBalance() - remainingAmount);
+            receiverAccount.setTotalBalance(receiverAccount.getTotalBalance() + amount);
 
-            if (result.getQueryStatus() != QueryStatus.SUCCESS) {
-                return new BankingResult(BankingResultType.FAILED, "Failed to update checking account");
-            }
+            if (AccountProvider.updateAccountBalance(account.getAccountNumber(), account.getTotalBalance()) &&
+                    AccountProvider.updateAccountBalance(savingsAccount.getAccountNumber(),
+                            savingsAccount.getTotalBalance())
+                    &&
+                    AccountProvider.updateAccountBalance(receiverAccount.getAccountNumber(),
+                            receiverAccount.getTotalBalance())) {
+                Long currentTime = Instant.now().toEpochMilli();
+                Transaction transaction = new Transaction(account.getCustomerId(),
+                        receiverAccount.getCustomerId(),
+                        account.getAccountNumber(), receiverAccount.getAccountNumber(), amount,
+                        currentTime);
+                TransactionProvider.addTransaction(transaction);
 
-            query = "UPDATE FROM checking_account total_balance = ? WHERE id = ?";
-            result = accountDB.execute(query, receiverTotalBalance, receiverAccountId);
+                Transaction autoTransferTransaction = new Transaction(savingsAccount.getCustomerId(),
+                        account.getCustomerId(),
+                        savingsAccount.getAccountNumber(), account.getAccountNumber(), remainingAmount,
+                        currentTime);
+                TransactionProvider.addTransaction(autoTransferTransaction);
 
-            if (result.getQueryStatus() != QueryStatus.SUCCESS) {
-                return new BankingResult(BankingResultType.FAILED, "Failed to update checking account");
-            }
-
-            query = "SELECT total_balance FROM savings_account WHERE id = ?";
-            result = accountDB.execute(query, linkedSavingsId);
-
-            if (result.getQueryStatus() != QueryStatus.SUCCESS) {
-                return new BankingResult(BankingResultType.FAILED, "Failed to get savings account");
-            }
-
-            Long savingTotalBalance = (Long) result.getCurrentRow().get(0);
-            savingTotalBalance -= remainingAmount;
-
-            query = "UPDATE FROM savings_account total_balance = ? WHERE id = ?";
-            result = accountDB.execute(query, savingTotalBalance, linkedSavingsId);
-
-            if (result.getQueryStatus() != QueryStatus.SUCCESS) {
-                return new BankingResult(BankingResultType.FAILED, "Failed to update savings account");
+                return new BankingResult(BankingResultType.SUCCESS, "Transfer successful");
             }
         } else {
             return new BankingResult(BankingResultType.FAILED, "Money is insufficient");
         }
 
-        return new BankingResult(BankingResultType.SUCCESS, "Transfer successful");
+        return new BankingResult(BankingResultType.FAILED, "Failed to update accounts");
     }
 
     public static ContextHandler transfer() {
@@ -240,49 +165,31 @@ public class AccountHandler {
             int userId = (int) context.getField("userId");
             Transfer request = new Transfer();
             if (context.bind(request)) {
-                if (Utils.isAccountNumberExist(request.getAccountNumber())
-                        && Utils.isAccountNumberExist(request.getReceiverAccountNumber())) {
-                    AccountType accountType = Utils.getAccountType(request.getAccountNumber());
-                    AccountType receiverAccountType = Utils.getAccountType(request.getReceiverAccountNumber());
+                if (AccountProvider.isAccountNumberExist(request.getAccountNumber())
+                        && AccountProvider.isAccountNumberExist(request.getReceiverAccountNumber())) {
+                    Account senderAccount = AccountProvider.getAccount(request.getAccountNumber());
+                    Account receiverAccount = AccountProvider.getAccount(request.getReceiverAccountNumber());
 
-                    if (request.getAccountNumber().equals(request.getReceiverAccountNumber())) {
+                    if (senderAccount.getAccountNumber().equals(receiverAccount.getAccountNumber())) {
                         context.reply(new Response(Status.FAILED, "Cannot transfer to self"));
                         return;
                     }
 
-                    if (accountType == AccountType.CHECKING && receiverAccountType == AccountType.CHECKING) {
-                        String query = "SELECT id, customer_id FROM checking_account WHERE account_number = ?";
-                        QueryResult result = accountDB.execute(query, request.getAccountNumber());
+                    if (senderAccount.getAccountType() == AccountType.CHECKING
+                            && receiverAccount.getAccountType() == AccountType.CHECKING) {
 
-                        if (result.getQueryStatus() != QueryStatus.SUCCESS) {
-                            context.reply(new Response(Status.FAILED, "Failed to get checking account"));
-                            return;
-                        }
-
-                        int senderAccountId = (int) result.getCurrentRow().get(0);
-                        int customerId = (int) result.getCurrentRow().get(1);
-
-                        if (customerId != userId) {
+                        if (senderAccount.getCustomerId() != userId) {
                             context.reply(new Response(Status.NOT_AUTHORIZED, "Not Authorized"));
                             return;
                         }
 
-                        query = "SELECT id FROM checking_account WHERE account_number = ?";
-                        QueryResult result2 = accountDB.execute(query, request.getReceiverAccountNumber());
-
-                        if (result2.getQueryStatus() != QueryStatus.SUCCESS) {
-                            context.reply(new Response(Status.FAILED, "Failed to get receiver checking account"));
-                            return;
-                        }
-
-                        int receiverAccountId = (int) result2.getCurrentRow().get(0);
-                        BankingResult bankingResult = updateAccount(senderAccountId, receiverAccountId,
+                        BankingResult bankingResult = updateAccount(senderAccount, receiverAccount,
                                 request.getAmount());
 
                         if (bankingResult.getType() == BankingResultType.SUCCESS) {
                             context.reply(new Response(Status.SUCCESS, "Transfer successful"));
                         } else {
-                            context.reply(new Response(Status.FAILED, "Failed to update accounts"));
+                            context.reply(new Response(Status.FAILED, bankingResult.getMessage()));
                         }
                     } else {
                         context.reply(new Response(Status.FAILED, "Cannot trnasfer with savings account"));
@@ -304,36 +211,10 @@ public class AccountHandler {
         return (context) -> {
             int userId = (int) context.getField("userId");
 
-            List<Account> accounts = new ArrayList<>();
-
-            String query = "SELECT account_number, total_balance, available_balance FROM checking_account WHERE customer_id = ?";
-            QueryResult result = accountDB.execute(query, userId);
-
-            if (result.getQueryStatus() != QueryStatus.SUCCESS && result.getQueryStatus() != QueryStatus.NOT_FOUND) {
-                context.reply(new Response(Status.FAILED, "Failed to get checking accounts"));
+            List<Account> accounts = AccountProvider.getAccounts(userId);
+            if (accounts.isEmpty()) {
+                context.reply(new Response(Status.FAILED, "No accounts found"));
                 return;
-            }
-
-            while (result.next()) {
-                List<Object> row = result.getCurrentRow();
-                Account account = new Account((String) row.get(0), (Long) row.get(1), (Long) row.get(2),
-                        AccountType.CHECKING);
-                accounts.add(account);
-            }
-
-            query = "SELECT account_number, total_balance, available_balance FROM savings_account WHERE customer_id = ?";
-            QueryResult result2 = accountDB.execute(query, userId);
-
-            if (result2.getQueryStatus() != QueryStatus.SUCCESS && result2.getQueryStatus() != QueryStatus.NOT_FOUND) {
-                context.reply(new Response(Status.FAILED, "Failed to get savings accounts"));
-                return;
-            }
-
-            while (result2.next()) {
-                List<Object> row = result2.getCurrentRow();
-                Account account = new Account((String) row.get(0), (Long) row.get(1), (Long) row.get(2),
-                        AccountType.SAVINGS);
-                accounts.add(account);
             }
 
             context.reply(new Accounts(Status.SUCCESS, "Accounts fetched successfully", accounts));

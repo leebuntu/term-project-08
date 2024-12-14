@@ -123,7 +123,7 @@ public class BankConnector {
 
 	public static BankingResult getTransactions(String token, String accountNumber) {
 		GetTransactions getTransactions = new GetTransactions(accountNumber);
-		if (!connector.send("/banking/account/transactions", token, getTransactions)) {
+		if (!connector.send("/banking/transaction/get", token, getTransactions)) {
 			return new BankingResult(BankingResultType.INTERNAL_ERROR, "서버에 연결할 수 없습니다.");
 		}
 

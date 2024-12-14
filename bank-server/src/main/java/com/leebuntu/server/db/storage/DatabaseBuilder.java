@@ -45,7 +45,7 @@ public class DatabaseBuilder {
      * 
      * @throws IOException
      */
-    public void create() throws IOException {
+    public boolean create() throws IOException {
         this.metadata = new Metadata();
         for (Table table : this.tables) {
             this.metadata.addTable(table);
@@ -54,15 +54,19 @@ public class DatabaseBuilder {
         File dbFile = new File(Config.DB_ROOT_PATH + File.separator + this.databaseName + ".db");
         if (!dbFile.exists()) {
             dbFile.createNewFile();
+        } else {
+            return false;
         }
 
         byte[] metadataBytes = this.metadata.toBytes();
 
         try (FileOutputStream fos = new FileOutputStream(dbFile);
-             DataOutputStream dos = new DataOutputStream(fos)) {
+                DataOutputStream dos = new DataOutputStream(fos)) {
             dos.writeInt(metadataBytes.length + 4);
             dos.write(metadataBytes);
             fos.flush();
         }
+
+        return true;
     }
 }

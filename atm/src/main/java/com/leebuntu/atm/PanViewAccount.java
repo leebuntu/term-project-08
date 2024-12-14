@@ -1,14 +1,17 @@
 package com.leebuntu.atm;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 
 import com.leebuntu.common.banking.BankingResult;
 import com.leebuntu.common.banking.BankingResult.BankingResultType;
+import com.leebuntu.common.banking.Transaction;
 import com.leebuntu.common.banking.account.Account;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.time.Instant;
 import java.util.List;
 
 public class PanViewAccount extends JPanel implements ActionListener {
@@ -17,9 +20,10 @@ public class PanViewAccount extends JPanel implements ActionListener {
     private JTextField Text_balance; // JTextField로 변경
     private JComboBox<String> Combo_Accounts;
     private List<Account> accounts;
-
+    private List<Transaction> transactions;
     private JButton Btn_Close;
-
+    private String[] columnNames = { "출금 계좌", "수신 계좌", "금액", "일시" };
+    private JTable Table_Account;
     ATMMain MainFrame;
 
     public PanViewAccount(ATMMain parent) {
@@ -30,6 +34,15 @@ public class PanViewAccount extends JPanel implements ActionListener {
     private void InitGUI() {
         setLayout(null);
         setBounds(0, 0, 480, 320);
+
+        Table_Account = new JTable(new Object[0][0], columnNames);
+        Label_Account = new JLabel("거래 내역");
+        Label_Account.setBounds(0, 150, 100, 20);
+        Label_Account.setHorizontalAlignment(JLabel.CENTER);
+        add(Label_Account);
+        JScrollPane scrollPane = new JScrollPane(Table_Account);
+        scrollPane.setBounds(100, 150, 350, 70);
+        add(scrollPane);
 
         Combo_Accounts = new JComboBox<>();
         Combo_Accounts.setBounds(100, 70, 350, 20);
@@ -94,8 +107,24 @@ public class PanViewAccount extends JPanel implements ActionListener {
 
         Long balance = accounts.get(index).getTotalBalance();
 
+        BankingResult result = BankConnector.getTransactions(MainFrame.token,
+                accounts.get(index).getAccountNumber());
+        if (result.getType() != BankingResultType.SUCCESS) {
+            return;
+        }
+
+        transactions = (List<Transaction>) result.getData();
+
         SwingUtilities.invokeLater(() -> {
             Text_balance.setText(BankUtils.displayBalance(balance) + "원");
+            Object[][] data = new Object[transactions.size()][4];
+            for (int i = 0; i < transactions.size(); i++) {
+                data[i][0] = transactions.get(i).getSenderAccountNumber();
+                data[i][1] = transactions.get(i).getReceiverAccountNumber();
+                data[i][2] = BankUtils.displayBalance(transactions.get(i).getAmount());
+                data[i][3] = Instant.ofEpochMilli(transactions.get(i).getDate()).toString();
+            }
+            Table_Account.setModel(new DefaultTableModel(data, columnNames));
         });
     }
 }

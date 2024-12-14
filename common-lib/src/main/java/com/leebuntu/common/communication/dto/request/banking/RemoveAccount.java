@@ -1,36 +1,27 @@
 package com.leebuntu.common.communication.dto.request.banking;
 
-
-import com.leebuntu.common.banking.account.AccountType;
 import com.leebuntu.common.communication.dto.Payload;
 
 public class RemoveAccount extends Payload<RemoveAccount> {
-    private int accountId;
-    private AccountType accountType;
+    private String accountNumber;
 
-    public RemoveAccount(int accountId, AccountType accountType) {
+    public RemoveAccount(String accountNumber) {
         super();
-        this.accountId = accountId;
-        this.accountType = accountType;
+        this.accountNumber = accountNumber;
     }
 
     public RemoveAccount() {
         super();
     }
 
-    public int getAccountId() {
-        return accountId;
-    }
-
-    public AccountType getAccountType() {
-        return accountType;
+    public String getAccountNumber() {
+        return accountNumber;
     }
 
     @Override
     public RemoveAccount fromJson(String json) {
         RemoveAccount removeAccount = super.fromJson(json);
-        this.accountId = removeAccount.accountId;
-        this.accountType = removeAccount.accountType;
+        this.accountNumber = removeAccount.accountNumber;
         return this;
     }
 }

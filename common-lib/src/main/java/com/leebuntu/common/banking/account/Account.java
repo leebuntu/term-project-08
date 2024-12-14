@@ -9,46 +9,16 @@ public class Account {
     protected Long openDate;
     protected AccountType accountType;
 
-    protected int linkedSavingsAccountNumber;
+    protected String linkedSavingsAccountNumber;
     protected double interestRate;
     protected Long maxTransferAmountToChecking;
 
     public Account() {
     }
 
-    public Account(String accountNumber, Long totalBalance, Long availableBalance, AccountType accountType) {
-        this.accountNumber = accountNumber;
-        this.totalBalance = totalBalance;
-        this.availableBalance = availableBalance;
-        this.accountType = accountType;
-    }
-
-    public Account(int customerId, String accountNumber, Long totalBalance, Long availableBalance, Long openDate,
-            AccountType accountType, int linkedSavingsAccountNumber) {
-        this.customerId = customerId;
-        this.accountNumber = accountNumber;
-        this.totalBalance = totalBalance;
-        this.availableBalance = availableBalance;
-        this.openDate = openDate;
-        this.accountType = accountType;
-        this.linkedSavingsAccountNumber = linkedSavingsAccountNumber;
-    }
-
-    public Account(int customerId, String accountNumber, Long totalBalance, Long availableBalance, Long openDate,
-            AccountType accountType, double interestRate, Long maxTransferAmountToChecking) {
-        this.customerId = customerId;
-        this.accountNumber = accountNumber;
-        this.totalBalance = totalBalance;
-        this.availableBalance = availableBalance;
-        this.openDate = openDate;
-        this.accountType = accountType;
-        this.interestRate = interestRate;
-        this.maxTransferAmountToChecking = maxTransferAmountToChecking;
-    }
-
     public Account(int id, int customerId, String accountNumber, Long totalBalance, Long availableBalance,
             Long openDate,
-            AccountType accountType, int linkedSavingsAccountNumber, double interestRate,
+            AccountType accountType, String linkedSavingsAccountNumber, double interestRate,
             Long maxTransferAmountToChecking) {
         this.id = id;
         this.customerId = customerId;
@@ -74,35 +44,71 @@ public class Account {
         return customerId;
     }
 
+    public void setCustomerId(int customerId) {
+        this.customerId = customerId;
+    }
+
     public String getAccountNumber() {
         return accountNumber;
+    }
+
+    public void setAccountNumber(String accountNumber) {
+        this.accountNumber = accountNumber;
     }
 
     public Long getTotalBalance() {
         return totalBalance;
     }
 
+    public void setTotalBalance(Long totalBalance) {
+        this.totalBalance = totalBalance;
+    }
+
     public Long getAvailableBalance() {
         return availableBalance;
+    }
+
+    public void setAvailableBalance(Long availableBalance) {
+        this.availableBalance = availableBalance;
     }
 
     public Long getOpenDate() {
         return openDate;
     }
 
+    public void setOpenDate(Long openDate) {
+        this.openDate = openDate;
+    }
+
     public AccountType getAccountType() {
         return accountType;
     }
 
-    public int getLinkedSavingsAccountNumber() {
+    public void setAccountType(AccountType accountType) {
+        this.accountType = accountType;
+    }
+
+    public String getLinkedSavingsAccountNumber() {
         return linkedSavingsAccountNumber;
+    }
+
+    public void setLinkedSavingsAccountNumber(String linkedSavingsAccountNumber) {
+        this.linkedSavingsAccountNumber = linkedSavingsAccountNumber;
     }
 
     public double getInterestRate() {
         return interestRate;
     }
 
+    public void setInterestRate(double interestRate) {
+        this.interestRate = interestRate;
+    }
+
     public Long getMaxTransferAmountToChecking() {
         return maxTransferAmountToChecking;
+    }
+
+    public void setMaxTransferAmountToChecking(Long maxTransferAmountToChecking) {
+        this.maxTransferAmountToChecking = maxTransferAmountToChecking;
     }
 }
