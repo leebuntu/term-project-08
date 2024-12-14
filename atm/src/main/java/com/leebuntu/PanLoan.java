@@ -37,8 +37,7 @@ public class PanLoan extends JPanel implements ActionListener {
         Label_Account.setFont(new Font("맑은 고딕", Font.PLAIN, 14));
         add(Label_Account);
 
-
-        Combo_Accounts = new JComboBox<>(new String[]{"계좌1", "계좌2", "계좌3","계좌4","계좌5"});
+        Combo_Accounts = new JComboBox<>(new String[] { "계좌1", "계좌2", "계좌3", "계좌4", "계좌5" });
         Combo_Accounts.setBounds(200, 70, 250, 30);
         Combo_Accounts.setFont(new Font("맑은 고딕", Font.PLAIN, 14));
         add(Combo_Accounts);
@@ -52,7 +51,6 @@ public class PanLoan extends JPanel implements ActionListener {
         Text_LoanAmount.setBounds(200, 120, 250, 30);
         Text_LoanAmount.setFont(new Font("맑은 고딕", Font.PLAIN, 14));
         add(Text_LoanAmount);
-
 
         Btn_RequestReview = new JButton("대출 심사받기");
         Btn_RequestReview.setBounds(70, 180, 150, 30);
@@ -86,7 +84,8 @@ public class PanLoan extends JPanel implements ActionListener {
             if (loanAmount.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "대출 금액을 입력해주세요.", "오류", JOptionPane.ERROR_MESSAGE);
             } else {
-                JOptionPane.showMessageDialog(this, selectedAccount + " 계좌에 " + loanAmount + "원을 대출받았습니다.", "대출 성공", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(this, selectedAccount + " 계좌에 " + loanAmount + "원을 대출받았습니다.", "대출 성공",
+                        JOptionPane.INFORMATION_MESSAGE);
             }
         }
     }

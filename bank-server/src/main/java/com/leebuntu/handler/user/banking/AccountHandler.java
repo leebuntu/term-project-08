@@ -284,35 +284,33 @@ public class AccountHandler {
 
             List<Account> accounts = new ArrayList<>();
 
-            String query = "SELECT * FROM checking_account WHERE customer_id = ?";
+            String query = "SELECT account_number, total_balance, available_balance FROM checking_account WHERE customer_id = ?";
             QueryResult result = accountDB.execute(query, userId);
 
-            if (result.getQueryStatus() != QueryStatus.SUCCESS) {
+            if (result.getQueryStatus() != QueryStatus.SUCCESS && result.getQueryStatus() != QueryStatus.NOT_FOUND) {
                 context.reply(new Response(Status.FAILED, "Failed to get checking accounts"));
                 return;
             }
 
             while (result.next()) {
                 List<Object> row = result.getCurrentRow();
-                Account account = new Account((int) row.get(0), (int) row.get(1), (String) row.get(2),
-                        (Long) row.get(3), (Long) row.get(4), (Long) row.get(5),
-                        AccountType.CHECKING, (int) row.get(6), 0, 0L);
+                Account account = new Account((String) row.get(0), (Long) row.get(1), (Long) row.get(2),
+                        AccountType.CHECKING);
                 accounts.add(account);
             }
 
-            query = "SELECT * FROM savings_account WHERE customer_id = ?";
+            query = "SELECT account_number, total_balance, available_balance FROM savings_account WHERE customer_id = ?";
             QueryResult result2 = accountDB.execute(query, userId);
 
-            if (result2.getQueryStatus() != QueryStatus.SUCCESS) {
+            if (result2.getQueryStatus() != QueryStatus.SUCCESS && result2.getQueryStatus() != QueryStatus.NOT_FOUND) {
                 context.reply(new Response(Status.FAILED, "Failed to get savings accounts"));
                 return;
             }
 
             while (result2.next()) {
                 List<Object> row = result2.getCurrentRow();
-                Account account = new Account((int) row.get(0), (int) row.get(1), (String) row.get(2),
-                        (Long) row.get(3), (Long) row.get(4), (Long) row.get(5),
-                        AccountType.SAVINGS, 0, (Double) row.get(6), (Long) row.get(7));
+                Account account = new Account((String) row.get(0), (Long) row.get(1), (Long) row.get(2),
+                        AccountType.SAVINGS);
                 accounts.add(account);
             }
 

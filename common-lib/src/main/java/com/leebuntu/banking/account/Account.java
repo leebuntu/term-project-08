@@ -16,6 +16,13 @@ public class Account {
     public Account() {
     }
 
+    public Account(String accountNumber, Long totalBalance, Long availableBalance, AccountType accountType) {
+        this.accountNumber = accountNumber;
+        this.totalBalance = totalBalance;
+        this.availableBalance = availableBalance;
+        this.accountType = accountType;
+    }
+
     public Account(int customerId, String accountNumber, Long totalBalance, Long availableBalance, Long openDate,
             AccountType accountType, int linkedSavingsAccountNumber) {
         this.customerId = customerId;

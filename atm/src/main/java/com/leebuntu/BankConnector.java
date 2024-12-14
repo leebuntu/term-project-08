@@ -13,7 +13,9 @@ import com.leebuntu.communication.dto.response.banking.Accounts;
 import com.leebuntu.communication.dto.response.banking.Transactions;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class BankConnector {
 	private static Connector connector;
@@ -71,6 +73,16 @@ public class BankConnector {
 			return null;
 		}
 
+	}
+
+	public static List<String> getFormattedAccounts(String token) {
+		if (!tryConnect()) {
+			return null;
+		}
+
+		List<Account> accounts = getAccounts(token);
+
+		return accounts.stream().map(Account::getAccountNumber).collect(Collectors.toList());
 	}
 
 	public static boolean transfer(String token, String accountNumber, String receiverAccountNumber, Long amount) {

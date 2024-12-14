@@ -1,16 +1,11 @@
 package com.leebuntu;
 
-import com.leebuntu.atm.communication.dto.request.banking.DepositWithdraw;
-
 import javax.swing.*;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.nio.ByteBuffer;
-import java.nio.channels.CompletionHandler;
+import java.util.List;
 
 public class PanDeposite extends JPanel implements ActionListener {
     private JLabel Label_Title;
@@ -36,7 +31,7 @@ public class PanDeposite extends JPanel implements ActionListener {
         Label_Title.setHorizontalAlignment(JLabel.CENTER);
         add(Label_Title);
 
-        Combo_Accounts = new JComboBox<>(new String[] { "계좌1", "계좌2", "계좌3", "계좌4", "계좌5" });
+        Combo_Accounts = new JComboBox<>();
         Combo_Accounts.setBounds(100, 70, 350, 20);
         Combo_Accounts.setFont(new Font("맑은 고딕", Font.PLAIN, 14));
         add(Combo_Accounts);
@@ -67,6 +62,18 @@ public class PanDeposite extends JPanel implements ActionListener {
         add(Btn_Close);
     }
 
+    public void updateAccounts() {
+        Combo_Accounts.removeAllItems();
+        List<String> accountNumbers = BankConnector.getFormattedAccounts(MainFrame.token);
+        if (accountNumbers == null) {
+            return;
+        }
+
+        for (String accountNumber : accountNumbers) {
+            Combo_Accounts.addItem(accountNumber);
+        }
+    }
+
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == Btn_Deposite) {
             deposit();
@@ -80,7 +87,6 @@ public class PanDeposite extends JPanel implements ActionListener {
 
     public void deposit() {
         try {
-
             long amount = Long.parseLong(Text_Amount.getText());
             if (amount <= 0) {
                 JOptionPane.showMessageDialog(null, "금액은 0보다 커야 합니다.", "ERROR", JOptionPane.ERROR_MESSAGE);
@@ -88,50 +94,22 @@ public class PanDeposite extends JPanel implements ActionListener {
             }
 
             String accountNumber = (String) Combo_Accounts.getSelectedItem();
-            String token = MainFrame.token;
-            DepositWithdraw depositWithdraw = new DepositWithdraw(accountNumber, amount);
 
-            CommandDTO commandDTO = new CommandDTO(RequestType.DEPOSIT, ATMMain.userId, amount);
+            if (!BankConnector.deposit(MainFrame.token, accountNumber, amount)) {
+                SwingUtilities.invokeLater(() -> {
+                    JOptionPane.showMessageDialog(null, "입금 실패", "ERROR", JOptionPane.ERROR_MESSAGE);
+                });
+                return;
+            }
 
-            MainFrame.send(commandDTO, new CompletionHandler<Integer, ByteBuffer>() {
-                @Override
-                public void completed(Integer result, ByteBuffer attachment) {
-                    if (result == -1) {
-                        return;
-                    }
-                    attachment.flip();
-                    try {
-
-                        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(attachment.array());
-                        ObjectInputStream objectInputStream = new ObjectInputStream(byteArrayInputStream);
-                        CommandDTO command = (CommandDTO) objectInputStream.readObject();
-
-                        SwingUtilities.invokeLater(() -> {
-                            String contentText;
-                            if (command.getResponseType() == ResponseType.SUCCESS) {
-                                contentText = "입금 되었습니다.";
-                                JOptionPane.showMessageDialog(null, contentText, "SUCCESS_MESSAGE",
-                                        JOptionPane.PLAIN_MESSAGE);
-                            } else {
-                                contentText = "입금 오류! 관리자에게 문의하세요.";
-                                JOptionPane.showMessageDialog(null, contentText, "ERROR_MESSAGE",
-                                        JOptionPane.ERROR_MESSAGE);
-                            }
-                        });
-                    } catch (IOException | ClassNotFoundException ex) {
-                        ex.printStackTrace();
-                        JOptionPane.showMessageDialog(null, "서버 응답 처리 오류", "ERROR", JOptionPane.ERROR_MESSAGE);
-                    }
-                }
-
-                @Override
-                public void failed(Throwable exc, ByteBuffer attachment) {
-                    JOptionPane.showMessageDialog(null, "서버 통신 실패: " + exc.getMessage(), "ERROR",
-                            JOptionPane.ERROR_MESSAGE);
-                }
+            SwingUtilities.invokeLater(() -> {
+                JOptionPane.showMessageDialog(null, "입금 성공", "SUCCESS", JOptionPane.INFORMATION_MESSAGE);
             });
+
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(null, "입금 금액을 정확히 입력해주세요.", "ERROR", JOptionPane.ERROR_MESSAGE);
+            SwingUtilities.invokeLater(() -> {
+                JOptionPane.showMessageDialog(null, "입금 금액을 정확히 입력해주세요.", "ERROR", JOptionPane.ERROR_MESSAGE);
+            });
         }
     }
 }

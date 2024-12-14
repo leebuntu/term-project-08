@@ -47,7 +47,7 @@ public class ATMMain extends JFrame implements ActionListener {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setResizable(false);
 
-        BackgroundPanel backgroundPanel = new BackgroundPanel("src/project/파란 배경.jpg");
+        BackgroundPanel backgroundPanel = new BackgroundPanel("/Users/buntu/Desktop파란 배경.jpg");
         backgroundPanel.setLayout(null);
         setContentPane(backgroundPanel);
 
@@ -60,7 +60,7 @@ public class ATMMain extends JFrame implements ActionListener {
         backgroundPanel.add(Label_Title);
 
         try {
-            Image Img_CNULogo = ImageIO.read(new File("src/project/cnu.jpg"));
+            Image Img_CNULogo = ImageIO.read(new File("/Users/buntu/Desktop/cnu.jpg"));
             ImageIcon IconCNU = new ImageIcon(Img_CNULogo.getScaledInstance(200, 130, Image.SCALE_SMOOTH));
             Label_Image = new JLabel(IconCNU);
             Label_Image.setBounds(135, 60, IconCNU.getIconWidth(), IconCNU.getIconHeight());
@@ -156,18 +156,22 @@ public class ATMMain extends JFrame implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == Btn_ViewAccount) {
             display("ViewAccount");
-            Pan_ViewAccount.GetBalance();
+            Pan_ViewAccount.updateAccounts();
         } else if (e.getSource() == Btn_Transfer) {
             display("Transfer");
+            Pan_Transfer.updateAccounts();
         } else if (e.getSource() == Btn_Login) {
-            display("Login");
             if (token != null) {
                 display("Main");
+            } else {
+                display("Login");
             }
         } else if (e.getSource() == Btn_Deposite) {
             display("Deposite");
+            Pan_Deposite.updateAccounts();
         } else if (e.getSource() == Btn_Withdrawal) {
             display("Withdrawal");
+            Pan_Withdrawal.updateAccounts();
         } else if (e.getSource() == Btn_Loan) {
             display("Loan");
         } else if (e.getSource() == Btn_EnlargeText) {
@@ -218,63 +222,6 @@ public class ATMMain extends JFrame implements ActionListener {
         Label_Image.setVisible(bOn);
         Btn_EnlargeText.setVisible(bOn);
     }
-
-    // private void startClient() {
-    // try {
-    // socket = new Socket();
-    // socket.connect(new InetSocketAddress("127.0.0.1", 5002));
-    // outputStream = socket.getOutputStream();
-    // inputStream = socket.getInputStream();
-    // System.out.println("뱅크 서버 접속");
-    // } catch (IOException e) {
-    // e.printStackTrace();
-    // disconnectServer();
-    // }
-    // }
-
-    // private void stopClient() {
-    // try {
-    // if (socket != null && !socket.isClosed()) {
-    // socket.close();
-    // }
-    // System.out.println("연결 종료");
-    // } catch (IOException e) {
-    // e.printStackTrace();
-    // }
-    // }
-
-    // private void disconnectServer() {
-    // stopClient();
-    // }
-
-    // @Override
-    // public void send(CommandDTO commandDTO, CompletionHandler<Integer,
-    // ByteBuffer> handlers) {
-    // commandDTO.setId(userId);
-    // try {
-    // ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-    // ObjectOutputStream objectOutputStream = new
-    // ObjectOutputStream(byteArrayOutputStream);
-    // objectOutputStream.writeObject(commandDTO);
-    // objectOutputStream.flush();
-    //
-    // outputStream.write(byteArrayOutputStream.toByteArray());
-    // outputStream.flush();
-    //
-    // byte[] buffer = new byte[1024];
-    // int bytesRead = inputStream.read(buffer);
-    // if (bytesRead != -1) {
-    // ByteBuffer responseBuffer = ByteBuffer.wrap(buffer, 0, bytesRead);
-    // handlers.completed(bytesRead, responseBuffer);
-    // } else {
-    // handlers.failed(new IOException("No response from server"), null);
-    // }
-    // } catch (IOException e) {
-    // e.printStackTrace();
-    // disconnectServer();
-    // handlers.failed(e, null);
-    // }
-    // }
 
     public static void main(String[] args) {
         new ATMMain();

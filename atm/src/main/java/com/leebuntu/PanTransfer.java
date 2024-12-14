@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.CompletionHandler;
+import java.util.List;
 
 public class PanTransfer extends JPanel implements ActionListener {
     private JLabel Label_RecvAccount;
@@ -90,51 +91,72 @@ public class PanTransfer extends JPanel implements ActionListener {
         }
     }
 
+    public void updateAccounts() {
+        Combo_Accounts.removeAllItems();
+        List<String> accounts = BankConnector.getFormattedAccounts(MainFrame.token);
+        if (accounts == null) {
+            return;
+        }
+
+        for (String account : accounts) {
+            Combo_Accounts.addItem(account);
+        }
+    }
+
     public void Transfer() {
+        String accountNo = Combo_Accounts.getSelectedItem().toString();
         String receiveAccountNo = Text_RecvAccount.getText();
         long amount = Long.parseLong(Text_Amount.getText());
 
-        CommandDTO commandDTO = new CommandDTO(RequestType.TRANSFER, password, MainFrame.userId, receiveAccountNo,
-                amount);
-        MainFrame.send(commandDTO, new CompletionHandler<Integer, ByteBuffer>() {
-            @Override
-            public void completed(Integer result, ByteBuffer attachment) {
-                if (result == -1) {
-                    return;
-                }
-                attachment.flip();
-                try {
-                    ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(attachment.array());
-                    ObjectInputStream objectInputStream = new ObjectInputStream(byteArrayInputStream);
-                    CommandDTO command = (CommandDTO) objectInputStream.readObject();
-                    SwingUtilities.invokeLater(() -> {
-                        String contentText = null;
-                        if (command.getResponseType() == ResponseType.INSUFFICIENT) {
-                            contentText = "잔액이 부족합니다.";
-                            JOptionPane.showMessageDialog(null, contentText, "ERROR_MESSAGE",
-                                    JOptionPane.ERROR_MESSAGE);
-                        } else if (command.getResponseType() == ResponseType.WRONG_ACCOUNT_NO) {
-                            contentText = "계좌번호가 존재하지 않습니다.";
-                            JOptionPane.showMessageDialog(null, contentText, "ERROR_MESSAGE",
-                                    JOptionPane.ERROR_MESSAGE);
-                        } else if (command.getResponseType() == ResponseType.WRONG_PASSWORD) {
-                            contentText = "비밀번호가 일치하지 않습니다.";
-                            JOptionPane.showMessageDialog(null, contentText, "ERROR_MESSAGE",
-                                    JOptionPane.ERROR_MESSAGE);
-                        } else {
-                            contentText = "이체 되었습니다.";
-                            JOptionPane.showMessageDialog(null, contentText, "SUCCESS_MESSAGE",
-                                    JOptionPane.PLAIN_MESSAGE);
-                        }
-                    });
-                } catch (IOException | ClassNotFoundException e) {
-                    e.printStackTrace();
-                }
-            }
+        if (amount <= 0) {
+            JOptionPane.showMessageDialog(null, "금액은 0보다 커야 합니다.", "ERROR", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
 
-            @Override
-            public void failed(Throwable exc, ByteBuffer attachment) {
-            }
-        });
+        // CommandDTO commandDTO = new CommandDTO(RequestType.TRANSFER, password,
+        // MainFrame.userId, receiveAccountNo,
+        // amount);
+        // MainFrame.send(commandDTO, new CompletionHandler<Integer, ByteBuffer>() {
+        // @Override
+        // public void completed(Integer result, ByteBuffer attachment) {
+        // if (result == -1) {
+        // return;
+        // }
+        // attachment.flip();
+        // try {
+        // ByteArrayInputStream byteArrayInputStream = new
+        // ByteArrayInputStream(attachment.array());
+        // ObjectInputStream objectInputStream = new
+        // ObjectInputStream(byteArrayInputStream);
+        // CommandDTO command = (CommandDTO) objectInputStream.readObject();
+        // SwingUtilities.invokeLater(() -> {
+        // String contentText = null;
+        // if (command.getResponseType() == ResponseType.INSUFFICIENT) {
+        // contentText = "잔액이 부족합니다.";
+        // JOptionPane.showMessageDialog(null, contentText, "ERROR_MESSAGE",
+        // JOptionPane.ERROR_MESSAGE);
+        // } else if (command.getResponseType() == ResponseType.WRONG_ACCOUNT_NO) {
+        // contentText = "계좌번호가 존재하지 않습니다.";
+        // JOptionPane.showMessageDialog(null, contentText, "ERROR_MESSAGE",
+        // JOptionPane.ERROR_MESSAGE);
+        // } else if (command.getResponseType() == ResponseType.WRONG_PASSWORD) {
+        // contentText = "비밀번호가 일치하지 않습니다.";
+        // JOptionPane.showMessageDialog(null, contentText, "ERROR_MESSAGE",
+        // JOptionPane.ERROR_MESSAGE);
+        // } else {
+        // contentText = "이체 되었습니다.";
+        // JOptionPane.showMessageDialog(null, contentText, "SUCCESS_MESSAGE",
+        // JOptionPane.PLAIN_MESSAGE);
+        // }
+        // });
+        // } catch (IOException | ClassNotFoundException e) {
+        // e.printStackTrace();
+        // }
+        // }
+
+        // @Override
+        // public void failed(Throwable exc, ByteBuffer attachment) {
+        // }
+        // });
     }
 }

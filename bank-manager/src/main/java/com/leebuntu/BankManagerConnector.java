@@ -88,7 +88,7 @@ public class BankManagerConnector {
         }
     }
 
-    public static boolean createCustomer(String token, String customerId, String name, String password, String address,
+    public static boolean createCustomer(String token, String customerId, String password, String name, String address,
             String phone) {
         if (!tryConnect()) {
             return false;
