@@ -2,6 +2,9 @@ package com.leebuntu;
 
 import javax.swing.*;
 
+import com.leebuntu.banking.BankingResult;
+import com.leebuntu.banking.BankingResult.BankingResultType;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -64,12 +67,12 @@ public class PanDeposite extends JPanel implements ActionListener {
 
     public void updateAccounts() {
         Combo_Accounts.removeAllItems();
-        List<String> accountNumbers = BankConnector.getFormattedAccounts(MainFrame.token);
-        if (accountNumbers == null) {
+        BankingResult result = BankConnector.getFormattedAccounts(MainFrame.token);
+        if (result.getType() != BankingResultType.SUCCESS) {
             return;
         }
 
-        for (String accountNumber : accountNumbers) {
+        for (String accountNumber : (List<String>) result.getData()) {
             Combo_Accounts.addItem(accountNumber);
         }
     }
@@ -95,9 +98,10 @@ public class PanDeposite extends JPanel implements ActionListener {
 
             String accountNumber = (String) Combo_Accounts.getSelectedItem();
 
-            if (!BankConnector.deposit(MainFrame.token, accountNumber, amount)) {
+            BankingResult result = BankConnector.deposit(MainFrame.token, accountNumber, amount);
+            if (result.getType() != BankingResultType.SUCCESS) {
                 SwingUtilities.invokeLater(() -> {
-                    JOptionPane.showMessageDialog(null, "입금 실패", "ERROR", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(null, result.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);
                 });
                 return;
             }

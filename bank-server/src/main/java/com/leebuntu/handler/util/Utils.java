@@ -43,16 +43,16 @@ public class Utils {
     }
 
     public static AccountType getAccountType(String accountNumber) {
-        String query = "SELECT account_type FROM account WHERE account_number = ?";
+        String query = "SELECT id FROM checking_account WHERE account_number = ?";
         QueryResult result = accountDB.execute(query, accountNumber);
         if (result.getQueryStatus() == QueryStatus.SUCCESS) {
-            return AccountType.valueOf((String) result.getCurrentRow().get(0));
+            return AccountType.CHECKING;
         }
 
-        query = "SELECT account_type FROM savings_account WHERE account_number = ?";
+        query = "SELECT id FROM savings_account WHERE account_number = ?";
         QueryResult result2 = accountDB.execute(query, accountNumber);
         if (result2.getQueryStatus() == QueryStatus.SUCCESS) {
-            return AccountType.valueOf((String) result2.getCurrentRow().get(0));
+            return AccountType.SAVINGS;
         }
 
         return null;

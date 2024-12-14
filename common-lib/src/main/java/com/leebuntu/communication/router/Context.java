@@ -1,7 +1,8 @@
 package com.leebuntu.communication.router;
 
-
 import com.leebuntu.communication.dto.Payload;
+import com.leebuntu.communication.dto.Response;
+import com.leebuntu.communication.dto.enums.Status;
 import com.leebuntu.communication.packet.Packet;
 
 import java.io.DataOutputStream;
@@ -12,14 +13,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Context {
-    private Socket socket;
     private OutputStream oos;
     private DataOutputStream dos;
     private Packet receivedPacket;
     private Map<String, Object> field;
 
     public Context(Socket socket, Packet receivedPacket) throws IOException {
-        this.socket = socket;
         this.oos = socket.getOutputStream();
         this.dos = new DataOutputStream(oos);
         this.receivedPacket = receivedPacket;
@@ -62,6 +61,7 @@ public class Context {
             dos.flush();
         } catch (Exception e) {
             e.printStackTrace();
+            this.reply(new Response(Status.INTERNAL_ERROR, "Internal server error"));
         }
     }
 }

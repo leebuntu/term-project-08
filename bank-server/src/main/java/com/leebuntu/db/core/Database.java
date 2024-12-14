@@ -64,6 +64,9 @@ public class Database {
      */
     public QueryResult execute(String query, Object... params) {
         Query parsedQuery = queryParser.parse(query, Arrays.asList(params));
+        if (parsedQuery == null) {
+            return new QueryResult(QueryStatus.FAILED);
+        }
         switch (parsedQuery.getQueryType()) {
             case SELECT:
                 return dataManager.select(parsedQuery);

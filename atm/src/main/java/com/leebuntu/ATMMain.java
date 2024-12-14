@@ -7,9 +7,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.Socket;
 
 public class ATMMain extends JFrame implements ActionListener {
 
@@ -31,12 +28,8 @@ public class ATMMain extends JFrame implements ActionListener {
     PanLoan Pan_Loan;
 
     public String token;
-    private Socket socket;
-    private OutputStream outputStream;
-    private InputStream inputStream;
 
     public ATMMain() {
-        // startClient();
         InitGui();
         setVisible(true);
     }
@@ -209,6 +202,17 @@ public class ATMMain extends JFrame implements ActionListener {
             case " EnlargeText" -> Btn_EnlargeText.setVisible(true);
 
         }
+    }
+
+    public void reset() {
+        token = null;
+        Pan_ViewAccount.setVisible(false);
+        Pan_Transfer.setVisible(false);
+        Pan_Deposite.setVisible(false);
+        Pan_Withdrawal.setVisible(false);
+        Pan_Login.setVisible(false);
+        Pan_Loan.setVisible(false);
+        SetFrameUI(true);
     }
 
     void SetFrameUI(Boolean bOn) {

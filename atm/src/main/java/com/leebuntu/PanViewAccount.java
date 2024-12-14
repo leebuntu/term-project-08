@@ -2,6 +2,7 @@ package com.leebuntu;
 
 import javax.swing.*;
 
+import com.leebuntu.banking.account.Account;
 import com.leebuntu.communication.dto.request.banking.ViewAccount;
 
 import java.awt.*;
@@ -16,10 +17,10 @@ import java.util.List;
 
 public class PanViewAccount extends JPanel implements ActionListener {
     private JLabel Label_Account;
-    private JTextField Text_Account; // JTextField로 변경
     private JLabel Label_balance;
     private JTextField Text_balance; // JTextField로 변경
     private JComboBox<String> Combo_Accounts;
+    private List<Account> accounts;
 
     private JButton Btn_Close;
 
@@ -37,6 +38,8 @@ public class PanViewAccount extends JPanel implements ActionListener {
         Combo_Accounts = new JComboBox<>();
         Combo_Accounts.setBounds(100, 70, 350, 20);
         Combo_Accounts.setFont(new Font("맑은 고딕", Font.PLAIN, 14));
+        Combo_Accounts.addActionListener(this);
+        Combo_Accounts.setSelectedIndex(-1);
         add(Combo_Accounts);
 
         Label_Account = new JLabel("계좌 조회");
@@ -51,6 +54,7 @@ public class PanViewAccount extends JPanel implements ActionListener {
 
         Text_balance = new JTextField();
         Text_balance.setBounds(100, 120, 350, 20);
+        Text_balance.setEditable(false);
         add(Text_balance);
 
         Btn_Close = new JButton("닫기");
@@ -61,57 +65,39 @@ public class PanViewAccount extends JPanel implements ActionListener {
 
     public void updateAccounts() {
         Combo_Accounts.removeAllItems();
-        List<String> accounts = BankConnector.getFormattedAccounts(MainFrame.token);
-        if (accounts == null) {
+        accounts = BankConnector.getAccounts(MainFrame.token);
+        if (accounts == null || accounts.isEmpty()) {
             return;
         }
 
-        for (String account : accounts) {
-            Combo_Accounts.addItem(account);
+        for (Account account : accounts) {
+            Combo_Accounts.addItem(account.getAccountNumber());
         }
+
+        GetBalance(0);
     }
 
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == Btn_Close) {
             this.setVisible(false);
             MainFrame.display("Main");
+        } else if (e.getSource() == Combo_Accounts) {
+            if (Combo_Accounts.getSelectedIndex() == -1) {
+                return;
+            }
+            GetBalance(Combo_Accounts.getSelectedIndex());
         }
     }
 
-    public void GetBalance() {
-        String accountNo = Combo_Accounts.getSelectedItem().toString();
+    public void GetBalance(int index) {
+        if (accounts == null || accounts.isEmpty()) {
+            return;
+        }
 
-        // MainFrame.send(new CommandDTO(RequestType.VIEW), new
-        // CompletionHandler<Integer, ByteBuffer>() {
-        // @Override
-        // public void completed(Integer result, ByteBuffer attachment) {
-        // if (result == -1) {
-        // return;
-        // }
-        // attachment.flip();
-        // try {
-        // ByteArrayInputStream byteArrayInputStream = new
-        // ByteArrayInputStream(attachment.array());
-        // ObjectInputStream objectInputStream = new
-        // ObjectInputStream(byteArrayInputStream);
-        // CommandDTO command = (CommandDTO) objectInputStream.readObject();
-        // SwingUtilities.invokeLater(() -> {
-        // String accountNumber =
-        // BankUtils.displayAccountNo(command.getAccountNumber());
-        // Text_Account.setText(accountNumber);
-        // String balance = BankUtils.displayBalance(command.getBalance());
-        // Text_balance.setText(balance + "원");
-        // });
-        // } catch (IOException e) {
-        // e.printStackTrace();
-        // } catch (ClassNotFoundException e) {
-        // e.printStackTrace();
-        // }
-        // }
+        Long balance = accounts.get(index).getTotalBalance();
 
-        // @Override
-        // public void failed(Throwable exc, ByteBuffer attachment) {
-        // }
-        // });
+        SwingUtilities.invokeLater(() -> {
+            Text_balance.setText(BankUtils.displayBalance(balance) + "원");
+        });
     }
 }

@@ -6,70 +6,75 @@ import com.leebuntu.communication.packet.Packet;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.Socket;
 
 public class Connector {
     private Socket socket;
-
-    private InputStream is;
     private DataInputStream dis;
-
-    private OutputStream os;
     private DataOutputStream dos;
 
-    public Connector(String host, int port) throws IOException {
-        socket = new Socket(host, port);
-        is = socket.getInputStream();
-        dis = new DataInputStream(is);
-        os = socket.getOutputStream();
-        dos = new DataOutputStream(os);
+    private final String host;
+    private final int port;
+
+    public Connector(String host, int port) {
+        this.host = host;
+        this.port = port;
+        connect();
     }
 
-    public void send(String path, String authToken, Payload<?> payload) throws IOException {
+    private boolean connect() {
+        try {
+            socket = new Socket(host, port);
+            dis = new DataInputStream(socket.getInputStream());
+            dos = new DataOutputStream(socket.getOutputStream());
+            System.out.println("Connected to server at " + host + ":" + port);
+            return true;
+        } catch (IOException e) {
+            System.err.println("Failed to connect to server: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean send(String path, String authToken, Payload<?> payload) {
+        if (socket == null) {
+            if (!connect())
+                return false;
+        }
+
         Packet packet = new Packet();
         packet.setPath(path);
         packet.setAuthToken(authToken);
         if (payload != null) {
             packet.setJsonPayload(payload.toJson());
-            System.out.println("Sending payload: " + payload.toJson());
         }
-        byte[] buffer = packet.toBytes();
-        dos.writeInt(buffer.length);
-        dos.write(buffer);
-        dos.flush();
+
+        try {
+            byte[] buffer = packet.toBytes();
+            dos.writeInt(buffer.length);
+            dos.write(buffer);
+            dos.flush();
+            return true;
+        } catch (IOException e) {
+            System.err.println("Failed to send data: " + e.getMessage());
+            socket = null;
+            return false;
+        }
     }
 
-    public boolean receiveAndBind(Payload<?> bindTarget) throws IOException {
-        while (true) {
-            if (dis.available() > 4) {
-                int packetSize = dis.readInt();
+    public boolean receiveAndBind(Payload<?> bindTarget) {
+        try {
+            int packetSize = dis.readInt();
+            byte[] buffer = new byte[packetSize];
+            dis.readFully(buffer);
 
-                byte[] buffer = new byte[packetSize];
-                int bytesRead = 0;
-
-                while (bytesRead < packetSize) {
-                    int read = is.read(buffer, bytesRead, packetSize - bytesRead);
-                    if (read == -1) {
-                        return false;
-                    }
-                    bytesRead += read;
-                }
-
-                Packet packet = new Packet();
-                packet.fromBytes(buffer);
-                System.out.println(packet.getJsonPayload());
-
-                bindTarget.fromJson(packet.getJsonPayload());
-                return true;
-            } else {
-                try {
-                    Thread.sleep(1);
-                } catch (InterruptedException e) {
-                    return false;
-                }
-            }
+            Packet packet = new Packet();
+            packet.fromBytes(buffer);
+            bindTarget.fromJson(packet.getJsonPayload());
+            return true;
+        } catch (IOException e) {
+            System.err.println("Failed to receive data: " + e.getMessage());
+            socket = null;
+            return false;
         }
     }
 }

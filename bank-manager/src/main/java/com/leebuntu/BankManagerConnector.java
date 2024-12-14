@@ -16,146 +16,85 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BankManagerConnector {
-    private static Connector connector;
-
-    private static boolean tryConnect() {
-        try {
-            if (connector == null) {
-                connector = new Connector("localhost", 8080);
-                return true;
-            } else {
-                return true;
-            }
-        } catch (IOException e) {
-            connector = null;
-            return false;
-        }
-    }
+    private static Connector connector = new Connector("localhost", 8080);
 
     public static List<Customer> getCustomers(String token) {
-        if (!tryConnect()) {
-            return null;
-        }
-        try {
-            connector.send("/admin/customers/get", token, null);
+        connector.send("/admin/customers/get", token, null);
 
-            Customers customers = new Customers();
-            connector.receiveAndBind(customers);
+        Customers customers = new Customers();
+        connector.receiveAndBind(customers);
 
-            return customers.getCustomers();
-        } catch (IOException e) {
-            return new ArrayList<>();
-        }
+        return customers.getCustomers();
     }
 
     public static List<Account> getAccounts(String token) {
-        if (!tryConnect()) {
-            return null;
-        }
+        connector.send("/admin/accounts/get/all", token, null);
 
-        try {
-            connector.send("/admin/accounts/get/all", token, null);
+        Accounts accounts = new Accounts();
+        connector.receiveAndBind(accounts);
 
-            Accounts accounts = new Accounts();
-            connector.receiveAndBind(accounts);
-
-            return accounts.getAccounts();
-        } catch (IOException e) {
-            return new ArrayList<>();
-        }
+        return accounts.getAccounts();
     }
 
     public static String login(String username, String password) {
-        if (!tryConnect()) {
-            return null;
-        }
+        Login login = new Login(username, password);
 
-        try {
-            Login login = new Login(username, password);
+        connector.send("/login", null, login);
 
-            connector.send("/login", null, login);
+        Response response = new Response();
+        connector.receiveAndBind(response);
 
-            Response response = new Response();
-            connector.receiveAndBind(response);
-
-            if (response.getStatus() == Status.SUCCESS) {
-                return response.getMessage();
-            } else {
-                return null;
-            }
-        } catch (IOException e) {
+        if (response.getStatus() == Status.SUCCESS) {
+            return response.getMessage();
+        } else {
             return null;
         }
     }
 
-    public static boolean createCustomer(String token, String customerId, String password, String name, String address,
+    public static boolean createCustomer(String token, String customerId, String name, String password, String address,
             String phone) {
-        if (!tryConnect()) {
-            return false;
-        }
+        CreateCustomer createCustomer = new CreateCustomer(customerId, name, password, address, phone);
+        connector.send("/admin/customers/create", token, createCustomer);
 
-        try {
-            CreateCustomer createCustomer = new CreateCustomer(customerId, name, password, address, phone);
-            connector.send("/admin/customers/create", token, createCustomer);
-
-            Response response = new Response();
-            connector.receiveAndBind(response);
-            if (response.getStatus() == Status.SUCCESS) {
-                return true;
-            } else {
-                return false;
-            }
-        } catch (IOException e) {
+        Response response = new Response();
+        connector.receiveAndBind(response);
+        if (response.getStatus() == Status.SUCCESS) {
+            return true;
+        } else {
             return false;
         }
     }
 
     public static boolean createCheckingAccount(String token, Account account) {
-        if (!tryConnect()) {
-            return false;
-        }
+        CreateAccount createCheckingAccount = new CreateAccount(account.getCustomerId(),
+                account.getAccountNumber(), account.getTotalBalance(),
+                account.getAvailableBalance(),
+                account.getAccountType(), account.getLinkedSavingsAccountNumber());
 
-        try {
-            CreateAccount createCheckingAccount = new CreateAccount(account.getCustomerId(),
-                    account.getAccountNumber(), account.getTotalBalance(),
-                    account.getAvailableBalance(),
-                    account.getAccountType(), account.getLinkedSavingsAccountNumber());
+        connector.send("/admin/accounts/create", token, createCheckingAccount);
 
-            connector.send("/admin/accounts/create", token, createCheckingAccount);
-
-            Response response = new Response();
-            connector.receiveAndBind(response);
-            if (response.getStatus() == Status.SUCCESS) {
-                return true;
-            } else {
-                return false;
-            }
-        } catch (IOException e) {
+        Response response = new Response();
+        connector.receiveAndBind(response);
+        if (response.getStatus() == Status.SUCCESS) {
+            return true;
+        } else {
             return false;
         }
     }
 
     public static boolean createSavingsAccount(String token, Account account) {
-        if (!tryConnect()) {
-            return false;
-        }
+        CreateAccount createSavingsAccount = new CreateAccount(account.getCustomerId(),
+                account.getAccountNumber(), account.getTotalBalance(),
+                account.getAvailableBalance(), account.getAccountType(),
+                account.getInterestRate(), account.getMaxTransferAmountToChecking());
 
-        try {
-            CreateAccount createSavingsAccount = new CreateAccount(account.getCustomerId(),
-                    account.getAccountNumber(), account.getTotalBalance(),
-                    account.getAvailableBalance(), account.getAccountType(),
-                    account.getInterestRate(), account.getMaxTransferAmountToChecking());
+        connector.send("/admin/accounts/create", token, createSavingsAccount);
 
-            connector.send("/admin/accounts/create", token, createSavingsAccount);
-
-            Response response = new Response();
-            connector.receiveAndBind(response);
-            if (response.getStatus() == Status.SUCCESS) {
-                return true;
-            } else {
-                return false;
-            }
-        } catch (IOException e) {
+        Response response = new Response();
+        connector.receiveAndBind(response);
+        if (response.getStatus() == Status.SUCCESS) {
+            return true;
+        } else {
             return false;
         }
     }

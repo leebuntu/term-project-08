@@ -5,6 +5,7 @@ import com.leebuntu.communication.dto.enums.Status;
 import com.leebuntu.communication.packet.Packet;
 
 import java.io.DataInputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.ServerSocket;
@@ -42,33 +43,33 @@ public class Router {
     private void handle(Socket socket) {
         try (InputStream is = socket.getInputStream();
                 DataInputStream dis = new DataInputStream(is)) {
-            while (isRunning) {
-                while (!socket.isClosed()) {
-                    if (dis.available() > 4) {
-                        int packetSize = dis.readInt();
+            top: while (isRunning) {
+                mid: while (!socket.isClosed()) {
+                    int packetSize = dis.readInt();
 
-                        byte[] buffer = new byte[packetSize];
-                        int bytesRead = 0;
+                    byte[] buffer = new byte[packetSize];
+                    int bytesRead = 0;
 
-                        while (bytesRead < packetSize) {
-                            int read = is.read(buffer, bytesRead, packetSize - bytesRead);
-                            if (read == -1) {
-                                return;
-                            }
-                            bytesRead += read;
+                    while (bytesRead < packetSize) {
+                        int read = is.read(buffer, bytesRead, packetSize - bytesRead);
+                        if (read == -1) {
+                            return;
                         }
+                        bytesRead += read;
+                    }
 
-                        Packet packet = new Packet();
-                        packet.fromBytes(buffer);
+                    Packet packet = new Packet();
+                    packet.fromBytes(buffer);
 
-                        System.out.println("Received json: " + packet.getJsonPayload());
+                    System.out.println("Received json: " + packet.getJsonPayload());
 
-                        Context context = new Context(socket, packet);
+                    Context context = new Context(socket, packet);
 
+                    try {
                         List<Middleware> middlewares = routerMiddlewareMap.get(packet.getPath());
                         for (Middleware middleware : middlewares) {
                             if (!middleware.process(context)) {
-                                continue;
+                                continue top;
                             }
                         }
 
@@ -78,16 +79,25 @@ public class Router {
                         } else {
                             context.reply(new Response(Status.FAILED, "Invalid route"));
                         }
-                    } else {
-                        Thread.sleep(1);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        break mid;
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        context.reply(new Response(Status.INTERNAL_ERROR, "Internal server error"));
                     }
                 }
                 activeConnections--;
+                System.out.println("Connection closed");
             }
-        } catch (IOException | InterruptedException e) {
+        } catch (
+
+        IOException e) {
             e.printStackTrace();
             activeConnections--;
+            System.out.println("Connection closed");
         }
+
     }
 
     public void start() {
@@ -97,6 +107,7 @@ public class Router {
                 try {
                     Socket socket = serverSocket.accept();
                     new Thread(() -> handle(socket)).start();
+                    System.out.println("New connection");
                     activeConnections++;
                 } catch (IOException e) {
                     e.printStackTrace();

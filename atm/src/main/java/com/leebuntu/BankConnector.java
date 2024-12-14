@@ -1,5 +1,7 @@
 package com.leebuntu;
 
+import com.leebuntu.banking.BankingResult;
+import com.leebuntu.banking.BankingResult.BankingResultType;
 import com.leebuntu.banking.Transaction;
 import com.leebuntu.banking.account.Account;
 import com.leebuntu.communication.Connector;
@@ -13,150 +15,125 @@ import com.leebuntu.communication.dto.response.banking.Accounts;
 import com.leebuntu.communication.dto.response.banking.Transactions;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class BankConnector {
-	private static Connector connector;
+	private static Connector connector = new Connector("localhost", 8080);
 
-	private static boolean tryConnect() {
-		try {
-			if (connector == null) {
-				connector = new Connector("localhost", 8080);
-				return true;
-			} else {
-				return true;
-			}
-		} catch (IOException e) {
-			connector = null;
-			return false;
-		}
-	}
+	public static BankingResult login(String id, String password) {
+		Login login = new Login(id, password);
 
-	public static String login(String id, String password) {
-		if (!tryConnect()) {
-			return null;
+		if (!connector.send("/login", null, login)) {
+			return new BankingResult(BankingResultType.INTERNAL_ERROR, "서버에 연결할 수 없습니다.");
 		}
 
-		try {
-			Login login = new Login(id, password);
+		Response response = new Response();
+		if (!connector.receiveAndBind(response)) {
+			return new BankingResult(BankingResultType.INTERNAL_ERROR, "서버에 연결할 수 없습니다.");
+		}
 
-			connector.send("/login", null, login);
-
-			Response response = new Response();
-			connector.receiveAndBind(response);
-
-			if (response.getStatus() == Status.SUCCESS) {
-				return response.getMessage();
-			} else {
-				return null;
-			}
-		} catch (IOException e) {
-			return null;
+		if (response.getStatus() == Status.SUCCESS) {
+			return new BankingResult(BankingResultType.SUCCESS, "로그인 성공", response.getMessage());
+		} else {
+			return new BankingResult(BankingResultType.FAILED, response.getMessage());
 		}
 	}
 
 	public static List<Account> getAccounts(String token) {
-		if (!tryConnect()) {
+		if (!connector.send("/banking/account/get", token, null)) {
 			return null;
 		}
 
-		try {
-			connector.send("/banking/account/get", token, null);
-
-			Accounts accounts = new Accounts();
-			connector.receiveAndBind(accounts);
-
-			return accounts.getAccounts();
-		} catch (IOException e) {
+		Accounts accounts = new Accounts();
+		if (!connector.receiveAndBind(accounts)) {
 			return null;
 		}
+
+		return accounts.getAccounts();
 
 	}
 
-	public static List<String> getFormattedAccounts(String token) {
-		if (!tryConnect()) {
-			return null;
-		}
-
+	public static BankingResult getFormattedAccounts(String token) {
 		List<Account> accounts = getAccounts(token);
 
-		return accounts.stream().map(Account::getAccountNumber).collect(Collectors.toList());
+		if (accounts == null) {
+			return new BankingResult(BankingResultType.INTERNAL_ERROR, "서버에 연결할 수 없습니다.");
+		}
+
+		return new BankingResult(BankingResultType.SUCCESS, "계좌 조회 성공",
+				accounts.stream().map(Account::getAccountNumber).collect(Collectors.toList()));
 	}
 
-	public static boolean transfer(String token, String accountNumber, String receiverAccountNumber, Long amount) {
-		if (!tryConnect()) {
-			return false;
+	public static BankingResult transfer(String token, String accountNumber, String receiverAccountNumber,
+			Long amount) {
+		Transfer transfer = new Transfer(accountNumber, amount, receiverAccountNumber);
+		if (!connector.send("/banking/account/transfer", token, transfer)) {
+			return new BankingResult(BankingResultType.INTERNAL_ERROR, "서버에 연결할 수 없습니다.");
 		}
 
-		try {
-			Transfer transfer = new Transfer(accountNumber, amount, receiverAccountNumber);
-			connector.send("/banking/account/transfer", token, transfer);
-
-			Response response = new Response();
-			connector.receiveAndBind(response);
-
-			return response.getStatus() == Status.SUCCESS;
-		} catch (IOException e) {
-			return false;
+		Response response = new Response();
+		if (!connector.receiveAndBind(response)) {
+			return new BankingResult(BankingResultType.INTERNAL_ERROR, "서버에 연결할 수 없습니다.");
 		}
 
-	}
-
-	public static boolean deposit(String token, String accountNumber, Long amount) {
-		if (!tryConnect()) {
-			return false;
-		}
-
-		try {
-			DepositWithdraw depositWithdraw = new DepositWithdraw(accountNumber, amount);
-			connector.send("/banking/account/deposit", token, depositWithdraw);
-
-			Response response = new Response();
-			connector.receiveAndBind(response);
-
-			return response.getStatus() == Status.SUCCESS;
-		} catch (IOException e) {
-			return false;
+		if (response.getStatus() == Status.SUCCESS) {
+			return new BankingResult(BankingResultType.SUCCESS, "송금 성공");
+		} else {
+			return new BankingResult(BankingResultType.FAILED, response.getMessage());
 		}
 
 	}
 
-	public static boolean withdraw(String token, String accountNumber, Long amount) {
-		if (!tryConnect()) {
-			return false;
+	public static BankingResult deposit(String token, String accountNumber, Long amount) {
+		DepositWithdraw depositWithdraw = new DepositWithdraw(accountNumber, amount);
+		if (!connector.send("/banking/account/deposit", token, depositWithdraw)) {
+			return new BankingResult(BankingResultType.INTERNAL_ERROR, "서버에 연결할 수 없습니다.");
 		}
 
-		try {
-			DepositWithdraw depositWithdraw = new DepositWithdraw(accountNumber, amount);
-			connector.send("/banking/account/withdraw", token, depositWithdraw);
+		Response response = new Response();
+		if (!connector.receiveAndBind(response)) {
+			return new BankingResult(BankingResultType.INTERNAL_ERROR, "서버에 연결할 수 없습니다.");
+		}
 
-			Response response = new Response();
-			connector.receiveAndBind(response);
-
-			return response.getStatus() == Status.SUCCESS;
-		} catch (IOException e) {
-			return false;
+		if (response.getStatus() == Status.SUCCESS) {
+			return new BankingResult(BankingResultType.SUCCESS, "입금 성공");
+		} else {
+			return new BankingResult(BankingResultType.FAILED, response.getMessage());
 		}
 
 	}
 
-	public static List<Transaction> getTransactions(String token, String accountNumber) {
-		if (!tryConnect()) {
-			return null;
+	public static BankingResult withdraw(String token, String accountNumber, Long amount) {
+		DepositWithdraw depositWithdraw = new DepositWithdraw(accountNumber, amount);
+		if (!connector.send("/banking/account/withdraw", token, depositWithdraw)) {
+			return new BankingResult(BankingResultType.INTERNAL_ERROR, "서버에 연결할 수 없습니다.");
 		}
 
-		try {
-			GetTransactions getTransactions = new GetTransactions(accountNumber);
-			connector.send("/banking/account/transactions", token, getTransactions);
-
-			Transactions transactions = new Transactions();
-			connector.receiveAndBind(transactions);
-
-			return transactions.getTransactions();
-		} catch (IOException e) {
-			return null;
+		Response response = new Response();
+		if (!connector.receiveAndBind(response)) {
+			return new BankingResult(BankingResultType.INTERNAL_ERROR, "서버에 연결할 수 없습니다.");
 		}
+
+		if (response.getStatus() == Status.SUCCESS) {
+			return new BankingResult(BankingResultType.SUCCESS, "출금 성공");
+		} else {
+			return new BankingResult(BankingResultType.FAILED, response.getMessage());
+		}
+
+	}
+
+	public static BankingResult getTransactions(String token, String accountNumber) {
+		GetTransactions getTransactions = new GetTransactions(accountNumber);
+		if (!connector.send("/banking/account/transactions", token, getTransactions)) {
+			return new BankingResult(BankingResultType.INTERNAL_ERROR, "서버에 연결할 수 없습니다.");
+		}
+
+		Transactions transactions = new Transactions();
+		if (!connector.receiveAndBind(transactions)) {
+			return new BankingResult(BankingResultType.INTERNAL_ERROR, "서버에 연결할 수 없습니다.");
+		}
+
+		return new BankingResult(BankingResultType.SUCCESS, "거래 조회 성공", transactions.getTransactions());
 	}
 }

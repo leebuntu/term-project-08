@@ -1,14 +1,13 @@
 package com.leebuntu;
 
 import javax.swing.*;
+
+import com.leebuntu.banking.BankingResult;
+import com.leebuntu.banking.BankingResult.BankingResultType;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.nio.ByteBuffer;
-import java.nio.channels.CompletionHandler;
 import java.util.List;
 
 public class PanTransfer extends JPanel implements ActionListener {
@@ -17,9 +16,6 @@ public class PanTransfer extends JPanel implements ActionListener {
 
     private JLabel Label_Amount;
     private JTextField Text_Amount;
-
-    private JLabel Label_Password;
-    private JTextField Text_Password;
 
     private JButton Btn_Transfer;
     private JButton Btn_Close;
@@ -46,16 +42,16 @@ public class PanTransfer extends JPanel implements ActionListener {
         Label_Account.setHorizontalAlignment(JLabel.CENTER);
         add(Label_Account);
 
-        Label_Account = new JLabel("계좌번호 입력");
-        Label_Account.setBounds(0, 120, 100, 20);
-        Label_Account.setHorizontalAlignment(JLabel.CENTER);
-        add(Label_Account);
+        Label_RecvAccount = new JLabel("받는 계좌번호 입력");
+        Label_RecvAccount.setBounds(0, 120, 100, 20);
+        Label_RecvAccount.setHorizontalAlignment(JLabel.CENTER);
+        add(Label_RecvAccount);
 
-        Text_Amount = new JTextField();
-        Text_Amount.setBounds(100, 120, 350, 20);
-        Text_Amount.setEditable(true);
-        Text_Amount.setToolTipText("숫자만 입력");
-        add(Text_Amount);
+        Text_RecvAccount = new JTextField();
+        Text_RecvAccount.setBounds(100, 120, 350, 20);
+        Text_RecvAccount.setEditable(true);
+        Text_RecvAccount.setToolTipText("숫자만 입력");
+        add(Text_RecvAccount);
 
         Label_Amount = new JLabel("이체금액");
         Label_Amount.setBounds(0, 170, 100, 20);
@@ -93,12 +89,12 @@ public class PanTransfer extends JPanel implements ActionListener {
 
     public void updateAccounts() {
         Combo_Accounts.removeAllItems();
-        List<String> accounts = BankConnector.getFormattedAccounts(MainFrame.token);
-        if (accounts == null) {
+        BankingResult result = BankConnector.getFormattedAccounts(MainFrame.token);
+        if (result.getType() != BankingResultType.SUCCESS) {
             return;
         }
 
-        for (String account : accounts) {
+        for (String account : (List<String>) result.getData()) {
             Combo_Accounts.addItem(account);
         }
     }
@@ -113,50 +109,12 @@ public class PanTransfer extends JPanel implements ActionListener {
             return;
         }
 
-        // CommandDTO commandDTO = new CommandDTO(RequestType.TRANSFER, password,
-        // MainFrame.userId, receiveAccountNo,
-        // amount);
-        // MainFrame.send(commandDTO, new CompletionHandler<Integer, ByteBuffer>() {
-        // @Override
-        // public void completed(Integer result, ByteBuffer attachment) {
-        // if (result == -1) {
-        // return;
-        // }
-        // attachment.flip();
-        // try {
-        // ByteArrayInputStream byteArrayInputStream = new
-        // ByteArrayInputStream(attachment.array());
-        // ObjectInputStream objectInputStream = new
-        // ObjectInputStream(byteArrayInputStream);
-        // CommandDTO command = (CommandDTO) objectInputStream.readObject();
-        // SwingUtilities.invokeLater(() -> {
-        // String contentText = null;
-        // if (command.getResponseType() == ResponseType.INSUFFICIENT) {
-        // contentText = "잔액이 부족합니다.";
-        // JOptionPane.showMessageDialog(null, contentText, "ERROR_MESSAGE",
-        // JOptionPane.ERROR_MESSAGE);
-        // } else if (command.getResponseType() == ResponseType.WRONG_ACCOUNT_NO) {
-        // contentText = "계좌번호가 존재하지 않습니다.";
-        // JOptionPane.showMessageDialog(null, contentText, "ERROR_MESSAGE",
-        // JOptionPane.ERROR_MESSAGE);
-        // } else if (command.getResponseType() == ResponseType.WRONG_PASSWORD) {
-        // contentText = "비밀번호가 일치하지 않습니다.";
-        // JOptionPane.showMessageDialog(null, contentText, "ERROR_MESSAGE",
-        // JOptionPane.ERROR_MESSAGE);
-        // } else {
-        // contentText = "이체 되었습니다.";
-        // JOptionPane.showMessageDialog(null, contentText, "SUCCESS_MESSAGE",
-        // JOptionPane.PLAIN_MESSAGE);
-        // }
-        // });
-        // } catch (IOException | ClassNotFoundException e) {
-        // e.printStackTrace();
-        // }
-        // }
+        BankingResult result = BankConnector.transfer(MainFrame.token, accountNo, receiveAccountNo, amount);
+        if (result.getType() != BankingResultType.SUCCESS) {
+            JOptionPane.showMessageDialog(null, result.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
 
-        // @Override
-        // public void failed(Throwable exc, ByteBuffer attachment) {
-        // }
-        // });
+        JOptionPane.showMessageDialog(null, "이체 성공", "SUCCESS", JOptionPane.PLAIN_MESSAGE);
     }
 }

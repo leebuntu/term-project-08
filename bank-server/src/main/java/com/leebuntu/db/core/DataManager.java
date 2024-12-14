@@ -30,9 +30,8 @@ public class DataManager {
 			queryResult.setResult(result);
 			queryResult.setQueryStatus(QueryStatus.SUCCESS);
 			return queryResult;
-		} catch (IOException e) {
-			return new QueryResult(QueryStatus.FAILED);
-		} catch (ClassCastException e) {
+		} catch (Exception e) {
+			e.printStackTrace();
 			return new QueryResult(QueryStatus.FAILED);
 		}
 	}
@@ -45,9 +44,8 @@ public class DataManager {
 			} else {
 				return new QueryResult(QueryStatus.DUPLICATED);
 			}
-		} catch (IOException e) {
-			return new QueryResult(QueryStatus.FAILED);
-		} catch (ClassCastException e) {
+		} catch (Exception e) {
+			e.printStackTrace();
 			return new QueryResult(QueryStatus.FAILED);
 		}
 	}
@@ -59,9 +57,8 @@ public class DataManager {
 			} else {
 				return new QueryResult(QueryStatus.NOT_FOUND);
 			}
-		} catch (IOException e) {
-			return new QueryResult(QueryStatus.FAILED);
-		} catch (ClassCastException e) {
+		} catch (Exception e) {
+			e.printStackTrace();
 			return new QueryResult(QueryStatus.FAILED);
 		}
 	}
@@ -73,10 +70,7 @@ public class DataManager {
 			} else {
 				return new QueryResult(QueryStatus.NOT_FOUND);
 			}
-		} catch (IOException e) {
-			e.printStackTrace();
-			return new QueryResult(QueryStatus.FAILED);
-		} catch (ClassCastException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			return new QueryResult(QueryStatus.FAILED);
 		}

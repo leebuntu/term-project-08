@@ -33,7 +33,7 @@ public class DataFileManager {
 	private String dbName;
 
 	public DataFileManager(String rootPath, String dbName, CacheManager cacheManager, Metadata metadata,
-						   Integer metadataSize) throws IOException {
+			Integer metadataSize) throws IOException {
 		this.rootPath = rootPath;
 		this.dbName = dbName;
 		this.cacheManager = cacheManager;

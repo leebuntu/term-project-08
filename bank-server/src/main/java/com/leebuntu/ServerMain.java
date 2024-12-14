@@ -33,7 +33,7 @@ class ServerMain {
 
     public static void main(String[] args) throws Exception {
 
-        buildDB();
+        // buildDB();
 
         Router router = new Router(8080);
 

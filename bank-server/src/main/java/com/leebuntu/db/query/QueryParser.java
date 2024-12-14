@@ -32,7 +32,7 @@ public class QueryParser {
     }
 
     private Query createQuery(QueryType queryType, String tableName, List<String> targetColumnNames,
-                              String whereColumnName, List<Object> parameters) {
+            String whereColumnName, List<Object> parameters) {
         Query query = new Query();
         query.setQueryType(queryType);
         query.setTableName(tableName);
@@ -117,7 +117,7 @@ public class QueryParser {
             case DELETE:
                 return parseDeleteQuery(query, parameters);
             default:
-                throw new IllegalArgumentException("Unsupported query type");
+                return null;
         }
     }
 }

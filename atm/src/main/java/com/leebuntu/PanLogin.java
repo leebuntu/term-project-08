@@ -1,6 +1,10 @@
 package com.leebuntu;
 
 import javax.swing.*;
+
+import com.leebuntu.banking.BankingResult;
+import com.leebuntu.banking.BankingResult.BankingResultType;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -75,15 +79,15 @@ public class PanLogin extends JPanel implements ActionListener {
             return;
         }
 
-        String token = BankConnector.login(id, password);
-        if (token == null) {
-            JOptionPane.showMessageDialog(null, "아이디 또는 비밀번호가 일치하지 않습니다.", "ERROR_MESSAGE", JOptionPane.ERROR_MESSAGE);
+        BankingResult result = BankConnector.login(id, password);
+        if (result.getType() != BankingResultType.SUCCESS) {
+            JOptionPane.showMessageDialog(null, result.getMessage(), "ERROR_MESSAGE", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
         SwingUtilities.invokeLater(() -> {
             String message;
-            MainFrame.token = token;
+            MainFrame.token = (String) result.getData();
             message = "로그인되었습니다.";
             setVisible(false);
             MainFrame.display("Main");
