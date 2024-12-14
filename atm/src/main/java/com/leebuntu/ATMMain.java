@@ -149,7 +149,7 @@ public class ATMMain extends JFrame implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == Btn_ViewAccount) {
             display("ViewAccount");
-            Pan_ViewAccount.updateAccounts();
+            // Pan_ViewAccount.updateAccounts();
         } else if (e.getSource() == Btn_Transfer) {
             display("Transfer");
             Pan_Transfer.updateAccounts();
@@ -183,12 +183,13 @@ public class ATMMain extends JFrame implements ActionListener {
     }
 
     public void display(String viewName) {
-        if (token == null) {
-            if (!viewName.equals("Login") && !viewName.equals("Main")) {
-                JOptionPane.showMessageDialog(null, "카드를 투입하거나 로그인하세요.", "ERROR_MESSAGE", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-        }
+        // if (token == null) {
+        // if (!viewName.equals("Login") && !viewName.equals("Main")) {
+        // JOptionPane.showMessageDialog(null, "카드를 투입하거나 로그인하세요.", "ERROR_MESSAGE",
+        // JOptionPane.ERROR_MESSAGE);
+        // return;
+        // }
+        // }
 
         SetFrameUI(false);
         switch (viewName) {
@@ -213,6 +214,7 @@ public class ATMMain extends JFrame implements ActionListener {
         Pan_Login.setVisible(false);
         Pan_Loan.setVisible(false);
         SetFrameUI(true);
+        JOptionPane.showMessageDialog(null, "서버에 연결할 수 없습니다.", "ERROR", JOptionPane.ERROR_MESSAGE);
     }
 
     void SetFrameUI(Boolean bOn) {

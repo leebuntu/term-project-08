@@ -91,6 +91,7 @@ public class PanTransfer extends JPanel implements ActionListener {
         Combo_Accounts.removeAllItems();
         BankingResult result = BankConnector.getFormattedAccounts(MainFrame.token);
         if (result.getType() != BankingResultType.SUCCESS) {
+            MainFrame.reset();
             return;
         }
 

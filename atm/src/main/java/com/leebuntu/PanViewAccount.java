@@ -2,6 +2,8 @@ package com.leebuntu;
 
 import javax.swing.*;
 
+import com.leebuntu.banking.BankingResult;
+import com.leebuntu.banking.BankingResult.BankingResultType;
 import com.leebuntu.banking.account.Account;
 import com.leebuntu.communication.dto.request.banking.ViewAccount;
 
@@ -65,11 +67,13 @@ public class PanViewAccount extends JPanel implements ActionListener {
 
     public void updateAccounts() {
         Combo_Accounts.removeAllItems();
-        accounts = BankConnector.getAccounts(MainFrame.token);
-        if (accounts == null || accounts.isEmpty()) {
+        BankingResult result = BankConnector.getAccounts(MainFrame.token);
+        if (result.getType() != BankingResultType.SUCCESS) {
+            MainFrame.reset();
             return;
         }
 
+        accounts = (List<Account>) result.getData();
         for (Account account : accounts) {
             Combo_Accounts.addItem(account.getAccountNumber());
         }

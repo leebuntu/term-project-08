@@ -40,29 +40,29 @@ public class BankConnector {
 		}
 	}
 
-	public static List<Account> getAccounts(String token) {
+	public static BankingResult getAccounts(String token) {
 		if (!connector.send("/banking/account/get", token, null)) {
-			return null;
+			return new BankingResult(BankingResultType.INTERNAL_ERROR, "서버에 연결할 수 없습니다.");
 		}
 
 		Accounts accounts = new Accounts();
 		if (!connector.receiveAndBind(accounts)) {
-			return null;
+			return new BankingResult(BankingResultType.INTERNAL_ERROR, "서버에 연결할 수 없습니다.");
 		}
 
-		return accounts.getAccounts();
-
+		return new BankingResult(BankingResultType.SUCCESS, "계좌 조회 성공", accounts.getAccounts());
 	}
 
 	public static BankingResult getFormattedAccounts(String token) {
-		List<Account> accounts = getAccounts(token);
+		BankingResult result = getAccounts(token);
 
-		if (accounts == null) {
+		if (result.getType() != BankingResultType.SUCCESS) {
 			return new BankingResult(BankingResultType.INTERNAL_ERROR, "서버에 연결할 수 없습니다.");
 		}
 
 		return new BankingResult(BankingResultType.SUCCESS, "계좌 조회 성공",
-				accounts.stream().map(Account::getAccountNumber).collect(Collectors.toList()));
+				((List<Account>) result.getData()).stream().map(Account::getAccountNumber)
+						.collect(Collectors.toList()));
 	}
 
 	public static BankingResult transfer(String token, String accountNumber, String receiverAccountNumber,
