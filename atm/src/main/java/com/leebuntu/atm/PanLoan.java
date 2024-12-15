@@ -1,11 +1,17 @@
 package com.leebuntu.atm;
 
 import javax.swing.*;
+
+import com.leebuntu.banking.BankingResult;
+import com.leebuntu.banking.BankingResult.BankingResultType;
+import com.leebuntu.banking.account.Account;
+
 import java.awt.*;
+import java.util.List;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class PanLoan extends JPanel implements ActionListener {
+public class PanLoan extends JPanel implements ActionListener, Pan {
 
     private JLabel Label_LoanGrade;
     private JLabel Label_Account;
@@ -15,6 +21,7 @@ public class PanLoan extends JPanel implements ActionListener {
     private JButton Btn_RequestReview;
     private JComboBox<String> Combo_Accounts;
     private JButton Btn_Close;
+    private List<Account> accounts;
 
     private ATMMain MainFrame;
 
@@ -69,6 +76,21 @@ public class PanLoan extends JPanel implements ActionListener {
         Btn_Close.setFont(new Font("맑은 고딕", Font.PLAIN, 14));
         Btn_Close.addActionListener(this);
         add(Btn_Close);
+    }
+
+    @Override
+    public void updateAccounts() {
+        Combo_Accounts.removeAllItems();
+        BankingResult result = BankConnector.getAccounts(MainFrame.token);
+        if (result.getType() != BankingResultType.SUCCESS) {
+            MainFrame.reset();
+            return;
+        }
+
+        accounts = (List<Account>) result.getData();
+        for (Account account : accounts) {
+            Combo_Accounts.addItem(account.getAccountNumber());
+        }
     }
 
     @Override

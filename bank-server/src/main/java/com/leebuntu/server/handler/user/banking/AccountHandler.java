@@ -1,22 +1,20 @@
 package com.leebuntu.server.handler.user.banking;
 
-import com.leebuntu.common.banking.BankingResult;
-import com.leebuntu.common.banking.BankingResult.BankingResultType;
-import com.leebuntu.common.banking.Transaction;
-import com.leebuntu.common.banking.account.Account;
-import com.leebuntu.common.banking.account.AccountType;
+import com.leebuntu.banking.BankingResult;
+import com.leebuntu.banking.BankingResult.BankingResultType;
+import com.leebuntu.banking.Transaction;
+import com.leebuntu.banking.account.Account;
+import com.leebuntu.banking.account.AccountType;
 import com.leebuntu.common.communication.dto.Response;
 import com.leebuntu.common.communication.dto.enums.Status;
-import com.leebuntu.common.communication.dto.request.banking.DepositWithdraw;
-import com.leebuntu.common.communication.dto.request.banking.Transfer;
-import com.leebuntu.common.communication.dto.response.banking.Accounts;
+import com.leebuntu.banking.dto.request.banking.DepositWithdraw;
+import com.leebuntu.banking.dto.request.banking.Transfer;
+import com.leebuntu.banking.dto.response.banking.Accounts;
 import com.leebuntu.common.communication.router.ContextHandler;
-import com.leebuntu.provider.AccountProvider;
-import com.leebuntu.provider.TransactionProvider;
+import com.leebuntu.server.provider.AccountProvider;
+import com.leebuntu.server.provider.TransactionProvider;
 import com.leebuntu.server.db.core.Database;
 import com.leebuntu.server.db.core.DatabaseManager;
-import com.leebuntu.server.db.query.QueryResult;
-import com.leebuntu.server.db.query.enums.QueryStatus;
 
 import java.time.Instant;
 import java.util.List;

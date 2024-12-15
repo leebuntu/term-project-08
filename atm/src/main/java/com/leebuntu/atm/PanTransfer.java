@@ -2,15 +2,15 @@ package com.leebuntu.atm;
 
 import javax.swing.*;
 
-import com.leebuntu.common.banking.BankingResult;
-import com.leebuntu.common.banking.BankingResult.BankingResultType;
+import com.leebuntu.banking.BankingResult;
+import com.leebuntu.banking.BankingResult.BankingResultType;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
 
-public class PanTransfer extends JPanel implements ActionListener {
+public class PanTransfer extends JPanel implements ActionListener, Pan {
     private JLabel Label_RecvAccount;
     private JTextField Text_RecvAccount;
 
@@ -87,6 +87,7 @@ public class PanTransfer extends JPanel implements ActionListener {
         }
     }
 
+    @Override
     public void updateAccounts() {
         Combo_Accounts.removeAllItems();
         BankingResult result = BankConnector.getFormattedAccounts(MainFrame.token);

@@ -88,11 +88,9 @@ public class Router {
                 }
                 activeConnections--;
                 System.out.println("Connection closed");
+                break;
             }
-        } catch (
-
-        IOException e) {
-            e.printStackTrace();
+        } catch (IOException e) {
             activeConnections--;
             System.out.println("Connection closed");
         }

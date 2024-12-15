@@ -1,13 +1,13 @@
 package com.leebuntu.server.handler.user.banking;
 
-import com.leebuntu.common.banking.Transaction;
+import com.leebuntu.banking.Transaction;
 import com.leebuntu.common.communication.dto.Response;
 import com.leebuntu.common.communication.dto.enums.Status;
-import com.leebuntu.common.communication.dto.request.banking.GetTransactions;
-import com.leebuntu.common.communication.dto.response.banking.Transactions;
+import com.leebuntu.banking.dto.request.banking.GetTransactions;
+import com.leebuntu.banking.dto.response.banking.Transactions;
 import com.leebuntu.common.communication.router.ContextHandler;
-import com.leebuntu.provider.AccountProvider;
-import com.leebuntu.provider.TransactionProvider;
+import com.leebuntu.server.provider.AccountProvider;
+import com.leebuntu.server.provider.TransactionProvider;
 
 import java.util.List;
 

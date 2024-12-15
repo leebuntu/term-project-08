@@ -3,10 +3,11 @@ package com.leebuntu.atm;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
-import com.leebuntu.common.banking.BankingResult;
-import com.leebuntu.common.banking.BankingResult.BankingResultType;
-import com.leebuntu.common.banking.Transaction;
-import com.leebuntu.common.banking.account.Account;
+import com.leebuntu.banking.BankingResult;
+import com.leebuntu.banking.BankingResult.BankingResultType;
+import com.leebuntu.banking.Transaction;
+import com.leebuntu.banking.account.Account;
+import com.leebuntu.banking.util.BankUtils;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -14,7 +15,7 @@ import java.awt.event.ActionListener;
 import java.time.Instant;
 import java.util.List;
 
-public class PanViewAccount extends JPanel implements ActionListener {
+public class PanViewAccount extends JPanel implements ActionListener, Pan {
     private JLabel Label_Account;
     private JLabel Label_balance;
     private JTextField Text_balance; // JTextField로 변경
@@ -72,6 +73,7 @@ public class PanViewAccount extends JPanel implements ActionListener {
         add(Btn_Close);
     }
 
+    @Override
     public void updateAccounts() {
         Combo_Accounts.removeAllItems();
         BankingResult result = BankConnector.getAccounts(MainFrame.token);

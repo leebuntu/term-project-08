@@ -40,7 +40,7 @@ public class ATMMain extends JFrame implements ActionListener {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setResizable(false);
 
-        BackgroundPanel backgroundPanel = new BackgroundPanel("/Users/buntu/Desktop파란 배경.jpg");
+        BackgroundPanel backgroundPanel = new BackgroundPanel("/Users/buntu/Desktop/파란 배경.jpg");
         backgroundPanel.setLayout(null);
         setContentPane(backgroundPanel);
 

@@ -1,13 +1,13 @@
 package com.leebuntu.server.handler.admin.customer;
 
-import com.leebuntu.common.banking.customer.Customer;
+import com.leebuntu.banking.customer.Customer;
 import com.leebuntu.common.communication.dto.Response;
 import com.leebuntu.common.communication.dto.enums.Status;
-import com.leebuntu.common.communication.dto.request.customer.CreateCustomer;
-import com.leebuntu.common.communication.dto.request.customer.RemoveCustomer;
-import com.leebuntu.common.communication.dto.response.customer.Customers;
+import com.leebuntu.banking.dto.request.customer.CreateCustomer;
+import com.leebuntu.banking.dto.request.customer.RemoveCustomer;
+import com.leebuntu.banking.dto.response.customer.Customers;
 import com.leebuntu.common.communication.router.ContextHandler;
-import com.leebuntu.provider.CustomerProvider;
+import com.leebuntu.server.provider.CustomerProvider;
 
 import java.util.List;
 

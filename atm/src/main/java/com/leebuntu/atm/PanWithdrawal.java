@@ -2,8 +2,8 @@ package com.leebuntu.atm;
 
 import javax.swing.*;
 
-import com.leebuntu.common.banking.BankingResult;
-import com.leebuntu.common.banking.BankingResult.BankingResultType;
+import com.leebuntu.banking.BankingResult;
+import com.leebuntu.banking.BankingResult.BankingResultType;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -15,7 +15,7 @@ import java.util.List;
 // Type : Class
 // Description :  출금 화면 패널을 구현한 Class 이다.
 //*******************************************************************
-public class PanWithdrawal extends JPanel implements ActionListener {
+public class PanWithdrawal extends JPanel implements ActionListener, Pan {
     private JLabel Label_Title;
     private JLabel Label_Amount;
     private JTextField Text_Amount;
@@ -94,6 +94,7 @@ public class PanWithdrawal extends JPanel implements ActionListener {
         }
     }
 
+    @Override
     public void updateAccounts() {
         Combo_Accounts.removeAllItems();
         BankingResult result = BankConnector.getFormattedAccounts(MainFrame.token);

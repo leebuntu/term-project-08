@@ -1,17 +1,17 @@
 package com.leebuntu.atm;
 
-import com.leebuntu.common.banking.BankingResult;
-import com.leebuntu.common.banking.BankingResult.BankingResultType;
-import com.leebuntu.common.banking.account.Account;
+import com.leebuntu.banking.BankingResult;
+import com.leebuntu.banking.BankingResult.BankingResultType;
+import com.leebuntu.banking.account.Account;
 import com.leebuntu.common.communication.Connector;
 import com.leebuntu.common.communication.dto.Response;
 import com.leebuntu.common.communication.dto.enums.Status;
-import com.leebuntu.common.communication.dto.request.auth.Login;
-import com.leebuntu.common.communication.dto.request.banking.DepositWithdraw;
-import com.leebuntu.common.communication.dto.request.banking.GetTransactions;
-import com.leebuntu.common.communication.dto.request.banking.Transfer;
-import com.leebuntu.common.communication.dto.response.banking.Accounts;
-import com.leebuntu.common.communication.dto.response.banking.Transactions;
+import com.leebuntu.banking.dto.request.auth.Login;
+import com.leebuntu.banking.dto.request.banking.DepositWithdraw;
+import com.leebuntu.banking.dto.request.banking.GetTransactions;
+import com.leebuntu.banking.dto.request.banking.Transfer;
+import com.leebuntu.banking.dto.response.banking.Accounts;
+import com.leebuntu.banking.dto.response.banking.Transactions;
 
 import java.util.List;
 import java.util.stream.Collectors;

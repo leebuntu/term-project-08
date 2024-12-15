@@ -13,12 +13,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Context {
+    private Socket socket;
     private OutputStream oos;
     private DataOutputStream dos;
     private Packet receivedPacket;
     private Map<String, Object> field;
 
     public Context(Socket socket, Packet receivedPacket) throws IOException {
+        this.socket = socket;
         this.oos = socket.getOutputStream();
         this.dos = new DataOutputStream(oos);
         this.receivedPacket = receivedPacket;
@@ -59,9 +61,11 @@ public class Context {
             dos.writeInt(buffer.length);
             dos.write(buffer);
             dos.flush();
-        } catch (Exception e) {
-            e.printStackTrace();
-            this.reply(new Response(Status.INTERNAL_ERROR, "Internal server error"));
+        } catch (IOException e) {
+            try {
+                socket.close();
+            } catch (IOException e1) {
+            }
         }
     }
 }
