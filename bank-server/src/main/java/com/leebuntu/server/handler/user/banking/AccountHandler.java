@@ -43,6 +43,11 @@ public class AccountHandler {
                         && account.getAvailableBalance() >= request.getAmount()) {
                     if (AccountProvider.updateAccountBalance(request.getAccountNumber(),
                             account.getTotalBalance() - request.getAmount())) {
+
+                        Transaction transaction = new Transaction(userId, -1, request.getAccountNumber(), "ATM",
+                                request.getAmount(), Instant.now().toEpochMilli());
+                        TransactionProvider.addTransaction(transaction);
+
                         context.reply(new Response(Status.SUCCESS, "Withdraw successful"));
                     } else {
                         context.reply(new Response(Status.FAILED, "Failed to update account balance"));
@@ -75,6 +80,11 @@ public class AccountHandler {
 
                 if (AccountProvider.updateAccountBalance(request.getAccountNumber(),
                         account.getTotalBalance() + request.getAmount())) {
+
+                    Transaction transaction = new Transaction(-1, userId, "ATM", request.getAccountNumber(),
+                            request.getAmount(), Instant.now().toEpochMilli());
+                    TransactionProvider.addTransaction(transaction);
+
                     context.reply(new Response(Status.SUCCESS, "Deposit successful"));
                 } else {
                     context.reply(new Response(Status.FAILED, "Failed to update account balance"));
@@ -163,46 +173,49 @@ public class AccountHandler {
             int userId = (int) context.getField("userId");
             Transfer request = new Transfer();
             if (context.bind(request)) {
-                if (AccountProvider.isAccountNumberExist(request.getAccountNumber())
-                        && AccountProvider.isAccountNumberExist(request.getReceiverAccountNumber())) {
-                    Account senderAccount = AccountProvider.getAccount(request.getAccountNumber());
-                    Account receiverAccount = AccountProvider.getAccount(request.getReceiverAccountNumber());
-
-                    if (senderAccount.getAccountNumber().equals(receiverAccount.getAccountNumber())) {
-                        context.reply(new Response(Status.FAILED, "Cannot transfer to self"));
-                        return;
-                    }
-
-                    if (senderAccount.getAccountType() == AccountType.CHECKING
-                            && receiverAccount.getAccountType() == AccountType.CHECKING) {
-
-                        if (senderAccount.getCustomerId() != userId) {
-                            context.reply(new Response(Status.NOT_AUTHORIZED, "Not Authorized"));
-                            return;
-                        }
-
-                        BankingResult bankingResult = updateAccount(senderAccount, receiverAccount,
-                                request.getAmount());
-
-                        if (bankingResult.getType() == BankingResultType.SUCCESS) {
-                            context.reply(new Response(Status.SUCCESS, "Transfer successful"));
-                        } else {
-                            context.reply(new Response(Status.FAILED, bankingResult.getMessage()));
-                        }
-                    } else {
-                        context.reply(new Response(Status.FAILED, "Cannot trnasfer with savings account"));
-                        return;
-                    }
-                } else {
+                if (!AccountProvider.isAccountNumberExist(request.getAccountNumber())
+                        || !AccountProvider.isAccountNumberExist(request.getReceiverAccountNumber())) {
                     context.reply(new Response(Status.FAILED, "Account not found"));
                     return;
                 }
+
+                Account senderAccount = AccountProvider.getAccount(request.getAccountNumber());
+                Account receiverAccount = AccountProvider.getAccount(request.getReceiverAccountNumber());
+
+                if (senderAccount.getAccountNumber().equals(receiverAccount.getAccountNumber())) {
+                    context.reply(new Response(Status.FAILED, "Cannot transfer to self"));
+                    return;
+                }
+
+                if (senderAccount.getAccountType() != AccountType.CHECKING
+                        || receiverAccount.getAccountType() != AccountType.CHECKING) {
+                    context.reply(new Response(Status.FAILED, "Cannot transfer with savings account"));
+                    return;
+                }
+
+                if (senderAccount.getCustomerId() != userId) {
+                    context.reply(new Response(Status.NOT_AUTHORIZED, "Not Authorized"));
+                    return;
+                }
+
+                accountDB.beginTransaction();
+
+                BankingResult bankingResult = updateAccount(senderAccount, receiverAccount,
+                        request.getAmount());
+
+                accountDB.endTransaction();
+
+                if (bankingResult.getType() == BankingResultType.SUCCESS) {
+                    context.reply(new Response(Status.SUCCESS, "Transfer successful"));
+                } else {
+                    context.reply(new Response(Status.FAILED, bankingResult.getMessage()));
+                }
+
             } else {
                 context.reply(new Response(Status.FAILED, "Failed to bind request"));
                 return;
             }
         };
-
     }
 
     public static ContextHandler getAccounts() {

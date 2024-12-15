@@ -4,6 +4,8 @@ import javax.swing.*;
 
 import com.leebuntu.banking.BankingResult;
 import com.leebuntu.banking.BankingResult.BankingResultType;
+import com.leebuntu.banking.account.Account;
+import com.leebuntu.banking.util.BankUtils;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -23,6 +25,9 @@ public class PanWithdrawal extends JPanel implements ActionListener, Pan {
     private JButton Btn_Close;
     private JComboBox<String> Combo_Accounts;
     private JLabel Label_Account;
+    private JLabel Label_TotalBalance;
+    private JTextField Text_TotalBalance;
+    private List<Account> accounts;
     ATMMain MainFrame;
 
     // *******************************************************************
@@ -47,6 +52,8 @@ public class PanWithdrawal extends JPanel implements ActionListener, Pan {
         Combo_Accounts = new JComboBox<>();
         Combo_Accounts.setBounds(100, 70, 350, 20);
         Combo_Accounts.setFont(new Font("맑은 고딕", Font.PLAIN, 14));
+        Combo_Accounts.addActionListener(this);
+        Combo_Accounts.setSelectedIndex(-1);
         add(Combo_Accounts);
 
         Label_Account = new JLabel("계좌 선택");
@@ -54,13 +61,23 @@ public class PanWithdrawal extends JPanel implements ActionListener, Pan {
         Label_Account.setHorizontalAlignment(JLabel.CENTER);
         add(Label_Account);
 
+        Label_TotalBalance = new JLabel("잔액");
+        Label_TotalBalance.setBounds(0, 100, 100, 20);
+        Label_TotalBalance.setHorizontalAlignment(JLabel.CENTER);
+        add(Label_TotalBalance);
+
+        Text_TotalBalance = new JTextField();
+        Text_TotalBalance.setBounds(100, 100, 350, 20);
+        Text_TotalBalance.setEditable(false);
+        add(Text_TotalBalance);
+
         Label_Amount = new JLabel("금액");
-        Label_Amount.setBounds(0, 120, 100, 20);
+        Label_Amount.setBounds(0, 130, 100, 20);
         Label_Amount.setHorizontalAlignment(JLabel.CENTER);
         add(Label_Amount);
 
         Text_Amount = new JTextField();
-        Text_Amount.setBounds(100, 120, 350, 20);
+        Text_Amount.setBounds(100, 130, 350, 20);
         Text_Amount.setEditable(true);
         Text_Amount.setToolTipText("숫자만 입력");
         add(Text_Amount);
@@ -92,20 +109,40 @@ public class PanWithdrawal extends JPanel implements ActionListener, Pan {
             this.setVisible(false);
             MainFrame.display("Main");
         }
+
+        if (e.getSource() == Combo_Accounts) {
+            if (Combo_Accounts.getSelectedIndex() == -1) {
+                return;
+            }
+            updateTotalBalance(Combo_Accounts.getSelectedIndex());
+        }
     }
 
     @Override
     public void updateAccounts() {
         Combo_Accounts.removeAllItems();
-        BankingResult result = BankConnector.getFormattedAccounts(MainFrame.token);
+        BankingResult result = BankConnector.getAccounts(MainFrame.token);
         if (result.getType() != BankingResultType.SUCCESS) {
             MainFrame.reset();
             return;
         }
 
-        for (String account : (List<String>) result.getData()) {
-            Combo_Accounts.addItem(account);
+        accounts = (List<Account>) result.getData();
+        for (Account account : accounts) {
+            Combo_Accounts.addItem(account.getAccountNumber());
         }
+
+        updateTotalBalance(0);
+    }
+
+    public void updateTotalBalance(int index) {
+        if (accounts == null || accounts.isEmpty()) {
+            return;
+        }
+
+        Long balance = accounts.get(index).getTotalBalance();
+
+        Text_TotalBalance.setText(BankUtils.displayBalance(balance) + "원");
     }
 
     // *******************************************************************

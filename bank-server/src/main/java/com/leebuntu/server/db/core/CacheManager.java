@@ -19,10 +19,6 @@ public class CacheManager {
 		this.pkCache.put(tableName, new HashSet<>(pkOffsetMap.keySet()));
 	}
 
-	public long getPKOffset(String tableName, Object pk) {
-		return pkOffsetMap.get(tableName).get(pk);
-	}
-
 	public boolean isExistPK(String tableName, Object pk) {
 		return pkCache.get(tableName).contains(pk);
 	}
@@ -35,5 +31,9 @@ public class CacheManager {
 	public void removePK(String tableName, Object pk) {
 		pkCache.get(tableName).remove(pk);
 		pkOffsetMap.get(tableName).remove(pk);
+	}
+
+	public long getPKOffset(String tableName, Object pk) {
+		return pkOffsetMap.get(tableName).get(pk);
 	}
 }

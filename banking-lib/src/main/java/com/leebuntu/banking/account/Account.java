@@ -4,22 +4,22 @@ public class Account {
     protected int id;
     protected int customerId;
     protected String accountNumber;
-    protected Long totalBalance;
-    protected Long availableBalance;
-    protected Long openDate;
+    protected long totalBalance;
+    protected long availableBalance;
+    protected long openDate;
     protected AccountType accountType;
 
     protected String linkedSavingsAccountNumber;
     protected double interestRate;
-    protected Long maxTransferAmountToChecking;
+    protected long maxTransferAmountToChecking;
 
     public Account() {
     }
 
-    public Account(int id, int customerId, String accountNumber, Long totalBalance, Long availableBalance,
-            Long openDate,
+    public Account(int id, int customerId, String accountNumber, long totalBalance, long availableBalance,
+            long openDate,
             AccountType accountType, String linkedSavingsAccountNumber, double interestRate,
-            Long maxTransferAmountToChecking) {
+            long maxTransferAmountToChecking) {
         this.id = id;
         this.customerId = customerId;
         this.accountNumber = accountNumber;
@@ -56,27 +56,27 @@ public class Account {
         this.accountNumber = accountNumber;
     }
 
-    public Long getTotalBalance() {
+    public long getTotalBalance() {
         return totalBalance;
     }
 
-    public void setTotalBalance(Long totalBalance) {
+    public void setTotalBalance(long totalBalance) {
         this.totalBalance = totalBalance;
     }
 
-    public Long getAvailableBalance() {
+    public long getAvailableBalance() {
         return availableBalance;
     }
 
-    public void setAvailableBalance(Long availableBalance) {
+    public void setAvailableBalance(long availableBalance) {
         this.availableBalance = availableBalance;
     }
 
-    public Long getOpenDate() {
+    public long getOpenDate() {
         return openDate;
     }
 
-    public void setOpenDate(Long openDate) {
+    public void setOpenDate(long openDate) {
         this.openDate = openDate;
     }
 
@@ -104,11 +104,11 @@ public class Account {
         this.interestRate = interestRate;
     }
 
-    public Long getMaxTransferAmountToChecking() {
+    public long getMaxTransferAmountToChecking() {
         return maxTransferAmountToChecking;
     }
 
-    public void setMaxTransferAmountToChecking(Long maxTransferAmountToChecking) {
+    public void setMaxTransferAmountToChecking(long maxTransferAmountToChecking) {
         this.maxTransferAmountToChecking = maxTransferAmountToChecking;
     }
 
@@ -121,15 +121,11 @@ public class Account {
             return false;
         }
 
-        if (this.totalBalance == null || this.totalBalance < 0) {
+        if (this.totalBalance < 0) {
             return false;
         }
 
-        if (this.availableBalance == null || this.availableBalance < 0) {
-            return false;
-        }
-
-        if (this.openDate == null || this.openDate < 0) {
+        if (this.availableBalance < 0) {
             return false;
         }
 
@@ -139,8 +135,7 @@ public class Account {
 
         switch (this.accountType) {
             case CHECKING:
-                if (this.linkedSavingsAccountNumber == null || this.linkedSavingsAccountNumber.isEmpty()
-                        || this.linkedSavingsAccountNumber.length() != 9) {
+                if (!this.linkedSavingsAccountNumber.isEmpty() && this.linkedSavingsAccountNumber.length() != 9) {
                     return false;
                 }
                 break;
@@ -148,7 +143,7 @@ public class Account {
                 if (this.interestRate < 0) {
                     return false;
                 }
-                if (this.maxTransferAmountToChecking == null || this.maxTransferAmountToChecking < 0) {
+                if (this.maxTransferAmountToChecking < 0) {
                     return false;
                 }
                 break;

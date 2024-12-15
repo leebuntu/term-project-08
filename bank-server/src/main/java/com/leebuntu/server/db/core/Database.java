@@ -1,6 +1,8 @@
 package com.leebuntu.server.db.core;
 
 import com.leebuntu.server.db.core.file.DataFileManager;
+import com.leebuntu.server.db.core.transaction.Transaction;
+import com.leebuntu.server.db.core.transaction.TransactionManager;
 import com.leebuntu.server.db.query.Query;
 import com.leebuntu.server.db.query.QueryParser;
 import com.leebuntu.server.db.query.QueryResult;
@@ -23,9 +25,10 @@ public class Database {
     private final DataFileManager dataFileManager;
     private final DataManager dataManager;
     private final QueryParser queryParser;
+    private final TransactionManager transactionManager;
 
     private Metadata metaData;
-    private Integer metaDataSize;
+    private int metaDataSize;
 
     public Database(String rootPath, String dbName) throws IOException {
         this.rootPath = rootPath;
@@ -35,9 +38,9 @@ public class Database {
 
         this.cacheManager = new CacheManager();
         this.dataFileManager = new DataFileManager(rootPath, dbName, cacheManager, metaData, metaDataSize);
-        this.dataManager = new DataManager(dataFileManager);
+        this.transactionManager = new TransactionManager();
+        this.dataManager = new DataManager(dataFileManager, transactionManager);
         this.queryParser = QueryParser.getInstance();
-
         dataFileManager.compactEmptySpace();
 
         initCache();
@@ -97,6 +100,14 @@ public class Database {
             dis.readFully(metadataBytes);
             this.metaData.fromBytes(metadataBytes);
         }
+    }
+
+    public void beginTransaction() {
+        transactionManager.beginTransaction();
+    }
+
+    public void endTransaction() {
+        transactionManager.endTransaction();
     }
 
     /**

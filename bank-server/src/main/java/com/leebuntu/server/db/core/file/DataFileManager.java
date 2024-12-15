@@ -126,7 +126,13 @@ public class DataFileManager {
 	public Object write(Query query) throws IOException, ClassCastException {
 		synchronized (writeLock) {
 			Table table = metadata.getTable(query.getTableName());
+			if (table == null) {
+				return null;
+			}
 			List<Integer> targetColumnIndices = getTargetColumnIndices(table, query);
+			if (targetColumnIndices.isEmpty()) {
+				return null;
+			}
 
 			Object pk = null;
 			int i = 0;
@@ -149,9 +155,10 @@ public class DataFileManager {
 				int pkIndex = table.getPKIndex();
 				query.addParameter(pk);
 				targetColumnIndices.add(pkIndex);
-			}
-			if (cacheManager.isExistPK(query.getTableName(), pk)) {
-				return null;
+			} else {
+				if (cacheManager.isExistPK(query.getTableName(), pk)) {
+					return null;
+				}
 			}
 
 			DBRecord record = createRecord(query, table, targetColumnIndices);
@@ -170,16 +177,27 @@ public class DataFileManager {
 	public boolean update(Query query) throws IOException, ClassCastException {
 		synchronized (writeLock) {
 			Table table = metadata.getTable(query.getTableName());
+			if (table == null) {
+				return false;
+			}
+
 			int whereColumnIndex = table.getColumnIndex(query.getWhereColumnName());
+			if (whereColumnIndex == -1) {
+				return false;
+			}
+
 			byte[] whereKeyBytes = ConvertUtil.columnToBytes(query.getWhereKey(), table.getColumn(whereColumnIndex));
 			List<Integer> targetColumnIndices = getTargetColumnIndices(table, query);
+			if (targetColumnIndices.isEmpty()) {
+				return false;
+			}
 
 			if (table.isPrimaryKey(whereColumnIndex)) {
 				if (!cacheManager.isExistPK(query.getTableName(), query.getWhereKey())) {
 					return false;
 				}
 
-				Long offset = cacheManager.getPKOffset(query.getTableName(), query.getWhereKey());
+				long offset = cacheManager.getPKOffset(query.getTableName(), query.getWhereKey());
 				offset += metadataSize;
 
 				dbFile.seek(offset);
@@ -248,8 +266,16 @@ public class DataFileManager {
 	public boolean delete(Query query) throws IOException, ClassCastException {
 		synchronized (writeLock) {
 			Table table = metadata.getTable(query.getTableName());
+			if (table == null) {
+				return false;
+			}
+
 			String whereColumnName = query.getWhereColumnName();
 			int whereColumnIndex = table.getColumnIndex(whereColumnName);
+			if (whereColumnIndex == -1) {
+				return false;
+			}
+
 			byte[] whereKeyBytes = ConvertUtil.columnToBytes(query.getWhereKey(), table.getColumn(whereColumnIndex));
 
 			if (table.isPrimaryKey(whereColumnIndex)) {

@@ -5,11 +5,11 @@ public class Transaction {
     private int receiverId;
     private String senderAccountNumber;
     private String receiverAccountNumber;
-    private Long amount;
-    private Long date;
+    private long amount;
+    private long date;
 
     public Transaction(int senderId, int receiverId, String senderAccountNumber, String receiverAccountNumber,
-            Long amount, Long date) {
+            long amount, long date) {
         this.senderId = senderId;
         this.receiverId = receiverId;
         this.senderAccountNumber = senderAccountNumber;
@@ -29,11 +29,11 @@ public class Transaction {
         return receiverId;
     }
 
-    public Long getAmount() {
+    public long getAmount() {
         return amount;
     }
 
-    public Long getDate() {
+    public long getDate() {
         return date;
     }
 

@@ -41,10 +41,13 @@ public class CustomerProvider {
     }
 
     public static int createCustomer(Customer customer) {
+        customerDB.beginTransaction();
+
         String query = "INSERT INTO user customer_type, customer_id, password";
         QueryResult result = customerDB.execute(query, CustomerType.CUSTOMER.ordinal(), customer.getCustomerId(),
                 customer.getPassword());
         if (result.getQueryStatus() != QueryStatus.SUCCESS) {
+            customerDB.endTransaction();
             return -1;
         }
 
@@ -54,8 +57,11 @@ public class CustomerProvider {
         result = customerDB.execute(query, lastInsertId, customer.getName(), customer.getAddress(), customer.getPhone(),
                 750);
         if (result.getQueryStatus() != QueryStatus.SUCCESS) {
+            customerDB.endTransaction();
             return -1;
         }
+
+        customerDB.endTransaction();
 
         return lastInsertId;
     }

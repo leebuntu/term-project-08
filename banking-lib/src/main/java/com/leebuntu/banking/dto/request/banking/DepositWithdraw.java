@@ -4,9 +4,9 @@ import com.leebuntu.common.communication.dto.Payload;
 
 public class DepositWithdraw extends Payload<DepositWithdraw> {
     private String accountNumber;
-    private Long amount;
+    private long amount;
 
-    public DepositWithdraw(String accountNumber, Long amount) {
+    public DepositWithdraw(String accountNumber, long amount) {
         super();
         this.accountNumber = accountNumber;
         this.amount = amount;
@@ -20,7 +20,7 @@ public class DepositWithdraw extends Payload<DepositWithdraw> {
         return accountNumber;
     }
 
-    public Long getAmount() {
+    public long getAmount() {
         return amount;
     }
 

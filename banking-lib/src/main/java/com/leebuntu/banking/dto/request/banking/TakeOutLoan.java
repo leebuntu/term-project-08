@@ -1,13 +1,12 @@
 package com.leebuntu.banking.dto.request.banking;
 
-
 import com.leebuntu.common.communication.dto.Payload;
 
 public class TakeOutLoan extends Payload<TakeOutLoan> {
 	private String accountNumber;
-	private Long amount;
+	private long amount;
 
-	public TakeOutLoan(String accountNumber, Long amount) {
+	public TakeOutLoan(String accountNumber, long amount) {
 		super();
 		this.accountNumber = accountNumber;
 		this.amount = amount;
@@ -21,7 +20,7 @@ public class TakeOutLoan extends Payload<TakeOutLoan> {
 		return accountNumber;
 	}
 
-	public Long getAmount() {
+	public long getAmount() {
 		return amount;
 	}
 
