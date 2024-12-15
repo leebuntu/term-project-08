@@ -23,6 +23,11 @@ public class CustomerHandler {
             CreateCustomer request = new CreateCustomer();
 
             if (context.bind(request)) {
+                if (!request.getCustomer().validate()) {
+                    context.reply(new Response(Status.INVALID_REQUEST, "Invalid format"));
+                    return;
+                }
+
                 Customer customer = new Customer();
                 customer.setName(request.getCustomer().getName());
                 customer.setCustomerId(request.getCustomer().getCustomerId());

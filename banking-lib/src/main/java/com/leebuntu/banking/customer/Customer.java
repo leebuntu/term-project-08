@@ -78,4 +78,28 @@ public class Customer {
     public void setCreditScore(int creditScore) {
         this.creditScore = creditScore;
     }
+
+    public boolean validate() {
+        if (this.name == null || this.name.isEmpty() || this.name.length() > 10) {
+            return false;
+        }
+
+        if (this.customerId == null || this.customerId.isEmpty() || this.customerId.length() > 20) {
+            return false;
+        }
+
+        if (this.password == null || this.password.isEmpty() || this.password.length() > 32) {
+            return false;
+        }
+
+        if (this.address == null || this.address.isEmpty() || this.address.length() > 85) {
+            return false;
+        }
+
+        if (this.phone == null || this.phone.isEmpty() || this.phone.length() > 16) {
+            return false;
+        }
+
+        return true;
+    }
 }

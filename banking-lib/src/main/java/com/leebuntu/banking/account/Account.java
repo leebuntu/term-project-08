@@ -111,4 +111,49 @@ public class Account {
     public void setMaxTransferAmountToChecking(Long maxTransferAmountToChecking) {
         this.maxTransferAmountToChecking = maxTransferAmountToChecking;
     }
+
+    public boolean validate() {
+        if (this.customerId < 0) {
+            return false;
+        }
+
+        if (this.accountNumber == null || this.accountNumber.isEmpty() || this.accountNumber.length() != 9) {
+            return false;
+        }
+
+        if (this.totalBalance == null || this.totalBalance < 0) {
+            return false;
+        }
+
+        if (this.availableBalance == null || this.availableBalance < 0) {
+            return false;
+        }
+
+        if (this.openDate == null || this.openDate < 0) {
+            return false;
+        }
+
+        if (this.accountType == null) {
+            return false;
+        }
+
+        switch (this.accountType) {
+            case CHECKING:
+                if (this.linkedSavingsAccountNumber == null || this.linkedSavingsAccountNumber.isEmpty()
+                        || this.linkedSavingsAccountNumber.length() != 9) {
+                    return false;
+                }
+                break;
+            case SAVINGS:
+                if (this.interestRate < 0) {
+                    return false;
+                }
+                if (this.maxTransferAmountToChecking == null || this.maxTransferAmountToChecking < 0) {
+                    return false;
+                }
+                break;
+        }
+
+        return true;
+    }
 }

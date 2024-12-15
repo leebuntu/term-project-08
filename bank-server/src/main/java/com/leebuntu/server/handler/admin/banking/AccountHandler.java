@@ -59,6 +59,11 @@ public class AccountHandler {
             if (context.bind(request)) {
                 BankingResult result = null;
 
+                if (!request.getAccount().validate()) {
+                    context.reply(new Response(Status.INVALID_REQUEST, "Invalid format"));
+                    return;
+                }
+
                 try {
                     if (request.getAccount().getAccountType() == AccountType.CHECKING) {
                         Account account = new Account();
