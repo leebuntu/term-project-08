@@ -1,12 +1,12 @@
 package com.leebuntu.server.handler.admin.customer;
 
-import com.leebuntu.banking.customer.Customer;
+import com.leebuntu.common.banking.customer.Customer;
 import com.leebuntu.common.communication.dto.Response;
 import com.leebuntu.common.communication.dto.enums.Status;
-import com.leebuntu.banking.dto.request.customer.CreateCustomer;
-import com.leebuntu.banking.dto.request.customer.RemoveCustomer;
-import com.leebuntu.banking.dto.response.customer.Customers;
-import com.leebuntu.common.communication.router.ContextHandler;
+import com.leebuntu.common.banking.dto.request.customer.CreateCustomer;
+import com.leebuntu.common.banking.dto.request.customer.RemoveCustomer;
+import com.leebuntu.common.banking.dto.response.customer.Customers;
+import com.leebuntu.server.communication.router.ContextHandler;
 import com.leebuntu.server.provider.CustomerProvider;
 
 import java.util.List;
@@ -23,11 +23,6 @@ public class CustomerHandler {
             CreateCustomer request = new CreateCustomer();
 
             if (context.bind(request)) {
-                if (!request.getCustomer().validate()) {
-                    context.reply(new Response(Status.INVALID_REQUEST, "Invalid format"));
-                    return;
-                }
-
                 Customer customer = new Customer();
                 customer.setName(request.getCustomer().getName());
                 customer.setCustomerId(request.getCustomer().getCustomerId());

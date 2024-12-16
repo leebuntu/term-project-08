@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-import com.leebuntu.banking.Transaction;
+import com.leebuntu.common.banking.Transaction;
 import com.leebuntu.server.db.core.Database;
 import com.leebuntu.server.db.core.DatabaseManager;
 import com.leebuntu.server.db.query.QueryResult;
@@ -14,10 +14,7 @@ public class TransactionProvider {
     private static final Database transactionDB = DatabaseManager.getDB("transactions");
 
     public static boolean addTransaction(Transaction transaction) {
-        String typeName = AccountProvider
-                .getAccountType(transaction.getSenderAccountNumber() == "ATM" ? transaction.getReceiverAccountNumber()
-                        : transaction.getSenderAccountNumber())
-                .name().toLowerCase();
+        String typeName = AccountProvider.getAccountType(transaction.getSenderAccountNumber()).name().toLowerCase();
         String query = "INSERT INTO " + typeName
                 + "_transaction sender_id, receiver_id, sender_account_number, receiver_account_number, amount, date";
         QueryResult result = transactionDB.execute(query, transaction.getSenderId(), transaction.getReceiverId(),

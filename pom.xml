@@ -10,7 +10,6 @@
     <packaging>pom</packaging>
     <modules>
         <module>common-lib</module>
-        <module>banking-lib</module>
         <module>atm</module>
         <module>bank-manager</module>
         <module>bank-server</module>

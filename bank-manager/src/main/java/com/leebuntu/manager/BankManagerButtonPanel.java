@@ -2,8 +2,8 @@ package com.leebuntu.manager;
 
 import javax.swing.*;
 
-import com.leebuntu.banking.BankingResult;
-import com.leebuntu.banking.BankingResult.BankingResultType;
+import com.leebuntu.common.banking.BankingResult;
+import com.leebuntu.common.banking.BankingResult.BankingResultType;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;

@@ -2,9 +2,9 @@ package com.leebuntu.atm;
 
 import javax.swing.*;
 
-import com.leebuntu.banking.BankingResult;
-import com.leebuntu.banking.BankingResult.BankingResultType;
-import com.leebuntu.banking.account.Account;
+import com.leebuntu.common.banking.BankingResult;
+import com.leebuntu.common.banking.BankingResult.BankingResultType;
+import com.leebuntu.common.banking.account.Account;
 
 import java.awt.*;
 import java.util.List;

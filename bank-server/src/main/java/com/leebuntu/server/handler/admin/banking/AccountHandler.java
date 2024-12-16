@@ -1,16 +1,16 @@
 package com.leebuntu.server.handler.admin.banking;
 
-import com.leebuntu.banking.BankingResult;
-import com.leebuntu.banking.BankingResult.BankingResultType;
-import com.leebuntu.banking.account.Account;
-import com.leebuntu.banking.account.AccountType;
+import com.leebuntu.common.banking.BankingResult;
+import com.leebuntu.common.banking.BankingResult.BankingResultType;
+import com.leebuntu.common.banking.account.Account;
+import com.leebuntu.common.banking.account.AccountType;
 import com.leebuntu.common.communication.dto.Response;
 import com.leebuntu.common.communication.dto.enums.Status;
-import com.leebuntu.banking.dto.request.banking.CreateAccount;
-import com.leebuntu.banking.dto.request.banking.RemoveAccount;
-import com.leebuntu.banking.dto.request.banking.ViewAccount;
-import com.leebuntu.banking.dto.response.banking.Accounts;
-import com.leebuntu.common.communication.router.ContextHandler;
+import com.leebuntu.common.banking.dto.request.banking.CreateAccount;
+import com.leebuntu.common.banking.dto.request.banking.RemoveAccount;
+import com.leebuntu.common.banking.dto.request.banking.ViewAccount;
+import com.leebuntu.common.banking.dto.response.banking.Accounts;
+import com.leebuntu.server.communication.router.ContextHandler;
 import com.leebuntu.server.provider.AccountProvider;
 import com.leebuntu.server.provider.CustomerProvider;
 
@@ -58,11 +58,6 @@ public class AccountHandler {
 
             if (context.bind(request)) {
                 BankingResult result = null;
-
-                if (!request.getAccount().validate()) {
-                    context.reply(new Response(Status.INVALID_REQUEST, "Invalid format"));
-                    return;
-                }
 
                 try {
                     if (request.getAccount().getAccountType() == AccountType.CHECKING) {

@@ -1,8 +1,8 @@
 package com.leebuntu.server;
 
-import com.leebuntu.banking.customer.CustomerType;
-import com.leebuntu.common.communication.jwt.JWTMiddleware;
-import com.leebuntu.common.communication.router.Router;
+import com.leebuntu.common.banking.customer.CustomerType;
+import com.leebuntu.server.communication.jwt.JWTMiddleware;
+import com.leebuntu.server.communication.router.Router;
 import com.leebuntu.server.db.core.Database;
 import com.leebuntu.server.db.core.DatabaseManager;
 import com.leebuntu.server.handler.admin.banking.AccountHandler;

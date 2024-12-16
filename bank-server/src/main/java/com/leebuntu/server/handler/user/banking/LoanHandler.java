@@ -1,8 +1,6 @@
 package com.leebuntu.server.handler.user.banking;
 
-import com.leebuntu.common.communication.router.ContextHandler;
-import com.leebuntu.server.db.core.Database;
-import com.leebuntu.server.db.core.DatabaseManager;
+import com.leebuntu.server.communication.router.ContextHandler;
 
 public class LoanHandler {
 

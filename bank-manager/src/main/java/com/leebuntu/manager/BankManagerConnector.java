@@ -1,17 +1,17 @@
 package com.leebuntu.manager;
 
-import com.leebuntu.banking.BankingResult;
-import com.leebuntu.banking.BankingResult.BankingResultType;
-import com.leebuntu.banking.account.Account;
-import com.leebuntu.banking.customer.Customer;
-import com.leebuntu.common.communication.Connector;
+import com.leebuntu.common.banking.BankingResult;
+import com.leebuntu.common.banking.BankingResult.BankingResultType;
+import com.leebuntu.common.banking.account.Account;
+import com.leebuntu.common.banking.customer.Customer;
 import com.leebuntu.common.communication.dto.Response;
 import com.leebuntu.common.communication.dto.enums.Status;
-import com.leebuntu.banking.dto.request.auth.Login;
-import com.leebuntu.banking.dto.request.banking.CreateAccount;
-import com.leebuntu.banking.dto.request.customer.CreateCustomer;
-import com.leebuntu.banking.dto.response.banking.Accounts;
-import com.leebuntu.banking.dto.response.customer.Customers;
+import com.leebuntu.common.banking.dto.request.auth.Login;
+import com.leebuntu.common.banking.dto.request.banking.CreateAccount;
+import com.leebuntu.common.banking.dto.request.customer.CreateCustomer;
+import com.leebuntu.common.banking.dto.response.banking.Accounts;
+import com.leebuntu.common.banking.dto.response.customer.Customers;
+import com.leebuntu.manager.communication.Connector;
 
 public class BankManagerConnector {
     private static Connector connector = new Connector("localhost", 8080);

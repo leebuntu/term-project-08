@@ -1,10 +1,10 @@
 package com.leebuntu.manager;
 
-import com.leebuntu.banking.BankingResult;
-import com.leebuntu.banking.BankingResult.BankingResultType;
-import com.leebuntu.banking.account.Account;
-import com.leebuntu.banking.account.AccountType;
-import com.leebuntu.banking.customer.Customer;
+import com.leebuntu.common.banking.BankingResult;
+import com.leebuntu.common.banking.BankingResult.BankingResultType;
+import com.leebuntu.common.banking.account.Account;
+import com.leebuntu.common.banking.account.AccountType;
+import com.leebuntu.common.banking.customer.Customer;
 
 import javax.swing.*;
 import javax.swing.event.TableModelEvent;

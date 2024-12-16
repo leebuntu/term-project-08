@@ -3,8 +3,8 @@ package com.leebuntu.server.provider;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.leebuntu.banking.customer.Customer;
-import com.leebuntu.banking.customer.CustomerType;
+import com.leebuntu.common.banking.customer.Customer;
+import com.leebuntu.common.banking.customer.CustomerType;
 import com.leebuntu.server.db.core.Database;
 import com.leebuntu.server.db.core.DatabaseManager;
 import com.leebuntu.server.db.query.QueryResult;
@@ -41,13 +41,10 @@ public class CustomerProvider {
     }
 
     public static int createCustomer(Customer customer) {
-        customerDB.beginTransaction();
-
         String query = "INSERT INTO user customer_type, customer_id, password";
         QueryResult result = customerDB.execute(query, CustomerType.CUSTOMER.ordinal(), customer.getCustomerId(),
                 customer.getPassword());
         if (result.getQueryStatus() != QueryStatus.SUCCESS) {
-            customerDB.endTransaction();
             return -1;
         }
 
@@ -57,11 +54,8 @@ public class CustomerProvider {
         result = customerDB.execute(query, lastInsertId, customer.getName(), customer.getAddress(), customer.getPhone(),
                 750);
         if (result.getQueryStatus() != QueryStatus.SUCCESS) {
-            customerDB.endTransaction();
             return -1;
         }
-
-        customerDB.endTransaction();
 
         return lastInsertId;
     }

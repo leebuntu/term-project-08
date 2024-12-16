@@ -3,11 +3,11 @@ package com.leebuntu.atm;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
-import com.leebuntu.banking.BankingResult;
-import com.leebuntu.banking.BankingResult.BankingResultType;
-import com.leebuntu.banking.Transaction;
-import com.leebuntu.banking.account.Account;
-import com.leebuntu.banking.util.BankUtils;
+import com.leebuntu.common.banking.BankingResult;
+import com.leebuntu.common.banking.BankingResult.BankingResultType;
+import com.leebuntu.common.banking.Transaction;
+import com.leebuntu.common.banking.account.Account;
+import com.leebuntu.common.banking.util.BankUtils;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;

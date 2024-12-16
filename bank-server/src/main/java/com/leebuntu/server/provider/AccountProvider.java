@@ -3,8 +3,8 @@ package com.leebuntu.server.provider;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.leebuntu.banking.account.Account;
-import com.leebuntu.banking.account.AccountType;
+import com.leebuntu.common.banking.account.Account;
+import com.leebuntu.common.banking.account.AccountType;
 import com.leebuntu.server.db.core.Database;
 import com.leebuntu.server.db.core.DatabaseManager;
 import com.leebuntu.server.db.query.QueryResult;

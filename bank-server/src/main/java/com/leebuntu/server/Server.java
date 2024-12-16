@@ -1,146 +1,213 @@
-// package com.leebuntu;
+package com.leebuntu.server;
 
-// import com.leebuntu.communication.router.Router;
-// import com.leebuntu.handler.admin.banking.AccountHandler;
-// import com.leebuntu.handler.admin.customer.CustomerHandler;
-// import com.leebuntu.handler.user.customer.LoginHandler;
+import javax.swing.*;
 
-// import javax.swing.*;
-// import java.awt.*;
-// import java.awt.event.ActionEvent;
-// import java.awt.event.ActionListener;
-// import java.io.IOException;
-// import java.sql.Date;
-// import java.time.LocalDate;
+import com.leebuntu.common.banking.customer.CustomerType;
+import com.leebuntu.server.communication.jwt.JWTMiddleware;
+import com.leebuntu.server.communication.router.Router;
+import com.leebuntu.server.db.core.Database;
+import com.leebuntu.server.db.core.DatabaseManager;
+import com.leebuntu.server.handler.admin.banking.AccountHandler;
+import com.leebuntu.server.handler.admin.customer.CustomerHandler;
+import com.leebuntu.server.handler.user.banking.LoanHandler;
+import com.leebuntu.server.handler.user.banking.TransactionHandler;
+import com.leebuntu.server.handler.user.customer.LoginHandler;
 
-// class Server extends JFrame implements ActionListener {
-// private JLabel Label_UserCount;
-// private JLabel Label_UserCount_2;
-// private JToggleButton Btn_StartStop;
-// private JButton Btn_Reset;
-// private JTextArea TextArea_Log;
-// private JScrollPane sp;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.time.Instant;
 
-// private Router router;
+public class Server extends JFrame implements ActionListener {
+    public enum LogType {
+        INFO,
+        ERROR,
+        WARNING,
+        DEBUG
+    }
 
-// private Thread userCountThread;
+    private JLabel Label_UserCount;
+    private JLabel Label_UserCount_2;
+    private JToggleButton Btn_StartStop;
+    private JButton Btn_Reset;
+    private JTextArea TextArea_Log;
+    private JScrollPane sp;
 
-// private boolean isRunning;
+    private Router router;
 
-// public Server() {
-// InitGui();
-// setVisible(true);
+    private Thread userCountThread;
 
-// }
+    private boolean isRunning;
 
-// private void InitGui() {
-// setTitle("서버 GUI");
-// setSize(480, 320);
-// setDefaultCloseOperation(EXIT_ON_CLOSE);
-// setResizable(false);
+    private static Server instance = null;
 
-// JPanel mainPanel = new JPanel();
-// mainPanel.setLayout(new BorderLayout());
+    public static Server getInstance() {
+        if (instance == null) {
+            instance = new Server();
+        }
+        return instance;
+    }
 
-// JPanel topPanel = new JPanel();
-// topPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 10));
+    public Server() {
+        InitGui();
+        setVisible(true);
+    }
 
-// Label_UserCount = new JLabel("현재 유저 수: ");
-// topPanel.add(Label_UserCount);
+    private void InitGui() {
+        setTitle("서버 GUI");
+        setSize(480, 320);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setResizable(false);
 
-// Label_UserCount_2 = new JLabel("0");
-// topPanel.add(Label_UserCount_2);
+        JPanel mainPanel = new JPanel();
+        mainPanel.setLayout(new BorderLayout());
 
-// mainPanel.add(topPanel, BorderLayout.NORTH);
+        JPanel topPanel = new JPanel();
+        topPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 10));
 
-// TextArea_Log = new JTextArea();
-// TextArea_Log.setEditable(false);
-// sp = new JScrollPane(TextArea_Log);
-// mainPanel.add(sp, BorderLayout.CENTER);
+        Label_UserCount = new JLabel("현재 유저 수: ");
+        topPanel.add(Label_UserCount);
 
-// JPanel bottomPanel = new JPanel();
-// bottomPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        Label_UserCount_2 = new JLabel("0");
+        topPanel.add(Label_UserCount_2);
 
-// Btn_StartStop = new JToggleButton("시작");
-// Btn_StartStop.addActionListener(this);
-// bottomPanel.add(Btn_StartStop);
+        mainPanel.add(topPanel, BorderLayout.NORTH);
 
-// Btn_Reset = new JButton("텍스트 창 초기화");
-// Btn_Reset.addActionListener(this);
-// bottomPanel.add(Btn_Reset);
+        TextArea_Log = new JTextArea();
+        TextArea_Log.setEditable(false);
+        sp = new JScrollPane(TextArea_Log);
+        mainPanel.add(sp, BorderLayout.CENTER);
 
-// mainPanel.add(bottomPanel, BorderLayout.SOUTH);
+        JPanel bottomPanel = new JPanel();
+        bottomPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 10));
 
-// add(mainPanel);
-// setLocationRelativeTo(null);
-// setVisible(true);
-// }
+        Btn_StartStop = new JToggleButton("시작");
+        Btn_StartStop.addActionListener(this);
+        bottomPanel.add(Btn_StartStop);
 
-// private void startServer() {
-// try {
-// router = new Router(8080);
+        Btn_Reset = new JButton("텍스트 창 초기화");
+        Btn_Reset.addActionListener(this);
+        bottomPanel.add(Btn_Reset);
 
-// router.addRoute("/admin/customers/get", CustomerHandler.getCustomers());
-// router.addRoute("/admin/customers/create", CustomerHandler.createCustomer());
-// router.addRoute("/admin/customers/delete", CustomerHandler.deleteCustomer());
+        mainPanel.add(bottomPanel, BorderLayout.SOUTH);
 
-// router.addRoute("/admin/accounts/create", AccountHandler.createAccount());
-// router.addRoute("/admin/accounts/get", AccountHandler.getAccount());
-// router.addRoute("/admin/accounts/get/all", AccountHandler.getAllAccounts());
+        add(mainPanel);
+        setLocationRelativeTo(null);
+        setVisible(true);
+    }
 
-// router.addRoute("/login", LoginHandler.getLoginHandler());
+    private static void buildDB() {
+        boolean isNew = true;
+        try {
+            isNew = DBBuild.buildUsersDB();
+            DBBuild.buildAccountsDB();
+            DBBuild.buildTransactionsDB();
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.exit(-1);
+        }
 
-// router.start();
-// } catch (IOException e) {
-// e.printStackTrace();
-// }
-// }
+        if (isNew) {
+            registerAdmin();
+        }
+    }
 
-// private void stopServer() {
-// if (router != null) {
-// router.stop();
-// }
-// }
+    private static void registerAdmin() {
+        String query = "INSERT INTO user customer_type, customer_id, password";
+        Database db = DatabaseManager.getDB("customers");
+        db.execute(query, CustomerType.ADMIN.ordinal(), "admin", "admin123");
+    }
 
-// public void actionPerformed(ActionEvent e) {
-// if (e.getSource() == Btn_StartStop) {
-// if (Btn_StartStop.isSelected()) {
-// startServer();
-// userCountThread = new Thread(this::setUserCount);
-// userCountThread.start();
-// addMsg("서버 시작: " + Date.valueOf(LocalDate.now()));
-// } else {
-// userCountThread.interrupt();
-// stopServer();
-// addMsg("서버 종료: " + Date.valueOf(LocalDate.now()));
-// }
-// } else if (e.getSource() == Btn_Reset) {
-// TextArea_Log.setText(null);
-// }
-// }
+    private void startServer() {
+        try {
+            buildDB();
 
-// private void setUserCount() {
-// while (true) {
-// try {
-// Thread.sleep(1000);
-// } catch (InterruptedException e) {
-// e.printStackTrace();
-// }
-// System.out.println(router.getActiveConnections());
-// SwingUtilities.invokeLater(() ->
-// Label_UserCount_2.setText(String.valueOf(router.getActiveConnections())));
-// }
-// }
+            router = new Router(8080);
 
-// public void displayInfo(String msg) {
-// addMsg(msg);
-// }
+            router.addRoute("/admin/customers/get", CustomerHandler.getCustomers(), JWTMiddleware.getJWTMiddleware());
+            router.addRoute("/admin/customers/create", CustomerHandler.createCustomer(),
+                    JWTMiddleware.getJWTMiddleware());
+            router.addRoute("/admin/customers/delete", CustomerHandler.deleteCustomer(),
+                    JWTMiddleware.getJWTMiddleware());
 
-// public void addMsg(String data) {
-// TextArea_Log.append(data + "\n");
-// }
+            router.addRoute("/admin/accounts/create", AccountHandler.createAccount(), JWTMiddleware.getJWTMiddleware());
+            router.addRoute("/admin/accounts/get", AccountHandler.getAccount(), JWTMiddleware.getJWTMiddleware());
+            router.addRoute("/admin/accounts/get/all", AccountHandler.getAllAccounts(),
+                    JWTMiddleware.getJWTMiddleware());
 
-// public static void main(String[] args) throws Exception {
-// Server f = new Server();
-// }
-// }
+            router.addRoute("/login", LoginHandler.getLoginHandler());
+
+            router.addRoute("/banking/account/withdraw",
+                    com.leebuntu.server.handler.user.banking.AccountHandler.withdraw(),
+                    JWTMiddleware.getJWTMiddleware());
+            router.addRoute("/banking/account/deposit",
+                    com.leebuntu.server.handler.user.banking.AccountHandler.deposit(),
+                    JWTMiddleware.getJWTMiddleware());
+            router.addRoute("/banking/account/transfer",
+                    com.leebuntu.server.handler.user.banking.AccountHandler.transfer(),
+                    JWTMiddleware.getJWTMiddleware());
+            router.addRoute("/banking/account/get",
+                    com.leebuntu.server.handler.user.banking.AccountHandler.getAccounts(),
+                    JWTMiddleware.getJWTMiddleware());
+
+            router.addRoute("/banking/transaction/get",
+                    TransactionHandler.getTransactions(),
+                    JWTMiddleware.getJWTMiddleware());
+
+            router.addRoute("/banking/loan/creditScore", LoanHandler.getCreditScore(),
+                    JWTMiddleware.getJWTMiddleware());
+            router.addRoute("/banking/loan/takeOut", LoanHandler.takeOutLoan(), JWTMiddleware.getJWTMiddleware());
+
+            router.start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void stopServer() {
+        if (router != null) {
+            router.stop();
+        }
+    }
+
+    public void actionPerformed(ActionEvent e) {
+        if (e.getSource() == Btn_StartStop) {
+            if (Btn_StartStop.isSelected()) {
+                startServer();
+                userCountThread = new Thread(this::setUserCount);
+                userCountThread.start();
+                printToLog(LogType.INFO, "서버 시작");
+            } else {
+                userCountThread.interrupt();
+                stopServer();
+                printToLog(LogType.INFO, "서버 종료");
+            }
+        } else if (e.getSource() == Btn_Reset) {
+            TextArea_Log.setText(null);
+        }
+    }
+
+    private void setUserCount() {
+        while (true) {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+            }
+            SwingUtilities.invokeLater(() -> Label_UserCount_2.setText(String.valueOf(router.getActiveConnections())));
+        }
+    }
+
+    public void printToLog(LogType type, String msg) {
+        addMsg(type, msg);
+    }
+
+    private void addMsg(LogType type, String data) {
+        TextArea_Log
+                .append("[" + type.toString().toUpperCase() + "] [" + Instant.now().toString() + "] " + data + "\n");
+    }
+
+    public static void main(String[] args) throws Exception {
+        Server.getInstance();
+    }
+}

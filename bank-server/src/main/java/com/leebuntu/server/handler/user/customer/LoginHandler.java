@@ -2,9 +2,9 @@ package com.leebuntu.server.handler.user.customer;
 
 import com.leebuntu.common.communication.dto.Response;
 import com.leebuntu.common.communication.dto.enums.Status;
-import com.leebuntu.banking.dto.request.auth.Login;
-import com.leebuntu.common.communication.jwt.JWTManager;
-import com.leebuntu.common.communication.router.ContextHandler;
+import com.leebuntu.common.banking.dto.request.auth.Login;
+import com.leebuntu.server.communication.jwt.JWTManager;
+import com.leebuntu.server.communication.router.ContextHandler;
 import com.leebuntu.server.provider.CustomerProvider;
 
 public class LoginHandler {

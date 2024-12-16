@@ -1,30 +1,23 @@
 package com.leebuntu.atm;
 
 import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
 
-import com.leebuntu.banking.BankingResult;
-import com.leebuntu.banking.BankingResult.BankingResultType;
-import com.leebuntu.banking.account.Account;
-import com.leebuntu.banking.util.BankUtils;
+import com.leebuntu.common.banking.BankingResult;
+import com.leebuntu.common.banking.BankingResult.BankingResultType;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.time.Instant;
 import java.util.List;
 
 public class PanDeposite extends JPanel implements ActionListener, Pan {
     private JLabel Label_Title;
-    private JLabel Label_TotalBalance;
     private JLabel Label_Amount;
     private JTextField Text_Amount;
-    private JTextField Text_TotalBalance;
     private JButton Btn_Deposite;
     private JButton Btn_Close;
     private JLabel Label_Account;
     private JComboBox<String> Combo_Accounts;
-    private List<Account> accounts;
     ATMMain MainFrame;
 
     public PanDeposite(ATMMain parent) {
@@ -44,8 +37,6 @@ public class PanDeposite extends JPanel implements ActionListener, Pan {
         Combo_Accounts = new JComboBox<>();
         Combo_Accounts.setBounds(100, 70, 350, 20);
         Combo_Accounts.setFont(new Font("맑은 고딕", Font.PLAIN, 14));
-        Combo_Accounts.addActionListener(this);
-        Combo_Accounts.setSelectedIndex(-1);
         add(Combo_Accounts);
 
         Label_Account = new JLabel("계좌 선택");
@@ -53,23 +44,13 @@ public class PanDeposite extends JPanel implements ActionListener, Pan {
         Label_Account.setHorizontalAlignment(JLabel.CENTER);
         add(Label_Account);
 
-        Label_TotalBalance = new JLabel("잔액");
-        Label_TotalBalance.setBounds(10, 100, 100, 20);
-        Label_TotalBalance.setHorizontalAlignment(JLabel.CENTER);
-        add(Label_TotalBalance);
-
-        Text_TotalBalance = new JTextField();
-        Text_TotalBalance.setBounds(100, 100, 350, 20);
-        Text_TotalBalance.setEditable(false);
-        add(Text_TotalBalance);
-
         Label_Amount = new JLabel("금액");
-        Label_Amount.setBounds(10, 130, 100, 20);
+        Label_Amount.setBounds(10, 120, 100, 20);
         Label_Amount.setHorizontalAlignment(JLabel.CENTER);
         add(Label_Amount);
 
         Text_Amount = new JTextField();
-        Text_Amount.setBounds(100, 130, 350, 20);
+        Text_Amount.setBounds(100, 120, 350, 20);
         Text_Amount.setEditable(true);
         add(Text_Amount);
 
@@ -87,50 +68,26 @@ public class PanDeposite extends JPanel implements ActionListener, Pan {
     @Override
     public void updateAccounts() {
         Combo_Accounts.removeAllItems();
-        BankingResult result = BankConnector.getAccounts(MainFrame.token);
+        BankingResult result = BankConnector.getFormattedAccounts(MainFrame.token);
         if (result.getType() != BankingResultType.SUCCESS) {
             MainFrame.reset();
             return;
         }
 
-        accounts = (List<Account>) result.getData();
-        for (Account account : accounts) {
-            Combo_Accounts.addItem(account.getAccountNumber());
+        for (String accountNumber : (List<String>) result.getData()) {
+            Combo_Accounts.addItem(accountNumber);
         }
-
-        updateTotalBalance(0);
     }
 
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == Btn_Deposite) {
             deposit();
-            this.setVisible(false);
-            MainFrame.display("Main");
         }
 
         if (e.getSource() == Btn_Close) {
             this.setVisible(false);
             MainFrame.display("Main");
         }
-
-        if (e.getSource() == Combo_Accounts) {
-            if (Combo_Accounts.getSelectedIndex() == -1) {
-                return;
-            }
-            updateTotalBalance(Combo_Accounts.getSelectedIndex());
-        }
-    }
-
-    public void updateTotalBalance(int index) {
-        if (accounts == null || accounts.isEmpty()) {
-            return;
-        }
-
-        Long balance = accounts.get(index).getTotalBalance();
-
-        SwingUtilities.invokeLater(() -> {
-            Text_TotalBalance.setText(BankUtils.displayBalance(balance) + "원");
-        });
     }
 
     public void deposit() {
