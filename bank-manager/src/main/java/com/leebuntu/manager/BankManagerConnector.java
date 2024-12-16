@@ -8,7 +8,10 @@ import com.leebuntu.common.communication.dto.Response;
 import com.leebuntu.common.communication.dto.enums.Status;
 import com.leebuntu.common.banking.dto.request.auth.Login;
 import com.leebuntu.common.banking.dto.request.banking.CreateAccount;
+import com.leebuntu.common.banking.dto.request.banking.RemoveAccount;
+import com.leebuntu.common.banking.dto.request.banking.ViewAccount;
 import com.leebuntu.common.banking.dto.request.customer.CreateCustomer;
+import com.leebuntu.common.banking.dto.request.customer.RemoveCustomer;
 import com.leebuntu.common.banking.dto.response.banking.Accounts;
 import com.leebuntu.common.banking.dto.response.customer.Customers;
 import com.leebuntu.manager.communication.Connector;
@@ -31,6 +34,20 @@ public class BankManagerConnector {
 
     public static BankingResult getAccounts(String token) {
         if (!connector.send("/admin/accounts/get/all", token, null)) {
+            return new BankingResult(BankingResultType.INTERNAL_ERROR, "서버에 연결할 수 없습니다.");
+        }
+
+        Accounts accounts = new Accounts();
+        if (!connector.receiveAndBind(accounts)) {
+            return new BankingResult(BankingResultType.INTERNAL_ERROR, "서버에 연결할 수 없습니다.");
+        }
+
+        return new BankingResult(BankingResultType.SUCCESS, "계좌 조회 성공", accounts.getAccounts());
+    }
+
+    public static BankingResult getAccountsByCustomerId(String token, int customerId) {
+        ViewAccount viewAccount = new ViewAccount(customerId);
+        if (!connector.send("/admin/accounts/get", token, viewAccount)) {
             return new BankingResult(BankingResultType.INTERNAL_ERROR, "서버에 연결할 수 없습니다.");
         }
 
@@ -119,6 +136,78 @@ public class BankManagerConnector {
 
         if (response.getStatus() == Status.SUCCESS) {
             return new BankingResult(BankingResultType.SUCCESS, "계좌 생성 성공");
+        } else {
+            return new BankingResult(BankingResultType.FAILED, response.getMessage());
+        }
+    }
+
+    public static BankingResult deleteCustomer(String token, int userId) {
+        RemoveCustomer removeCustomer = new RemoveCustomer(userId);
+        if (!connector.send("/admin/customers/delete", token, removeCustomer)) {
+            return new BankingResult(BankingResultType.INTERNAL_ERROR, "서버에 연결할 수 없습니다.");
+        }
+
+        Response response = new Response();
+        if (!connector.receiveAndBind(response)) {
+            return new BankingResult(BankingResultType.INTERNAL_ERROR, "서버에 연결할 수 없습니다.");
+        }
+
+        if (response.getStatus() == Status.SUCCESS) {
+            return new BankingResult(BankingResultType.SUCCESS, "고객 삭제 성공");
+        } else {
+            return new BankingResult(BankingResultType.FAILED, response.getMessage());
+        }
+    }
+
+    public static BankingResult deleteAccount(String token, String accountNumber) {
+        RemoveAccount removeAccount = new RemoveAccount(accountNumber);
+        if (!connector.send("/admin/accounts/delete", token, removeAccount)) {
+            return new BankingResult(BankingResultType.INTERNAL_ERROR, "서버에 연결할 수 없습니다.");
+        }
+
+        Response response = new Response();
+        if (!connector.receiveAndBind(response)) {
+            return new BankingResult(BankingResultType.INTERNAL_ERROR, "서버에 연결할 수 없습니다.");
+        }
+
+        if (response.getStatus() == Status.SUCCESS) {
+            return new BankingResult(BankingResultType.SUCCESS, "계좌 삭제 성공");
+        } else {
+            return new BankingResult(BankingResultType.FAILED, response.getMessage());
+        }
+    }
+
+    public static BankingResult updateAccount(String token, Account account) {
+        CreateAccount request = new CreateAccount(account);
+        if (!connector.send("/admin/accounts/update", token, request)) {
+            return new BankingResult(BankingResultType.INTERNAL_ERROR, "서버에 연결할 수 없습니다.");
+        }
+
+        Response response = new Response();
+        if (!connector.receiveAndBind(response)) {
+            return new BankingResult(BankingResultType.INTERNAL_ERROR, "서버에 연결할 수 없습니다.");
+        }
+
+        if (response.getStatus() == Status.SUCCESS) {
+            return new BankingResult(BankingResultType.SUCCESS, "계좌 업데이트 성공");
+        } else {
+            return new BankingResult(BankingResultType.FAILED, response.getMessage());
+        }
+    }
+
+    public static BankingResult updateCustomer(String token, Customer customer) {
+        CreateCustomer createCustomer = new CreateCustomer(customer);
+        if (!connector.send("/admin/customers/update", token, createCustomer)) {
+            return new BankingResult(BankingResultType.INTERNAL_ERROR, "서버에 연결할 수 없습니다.");
+        }
+
+        Response response = new Response();
+        if (!connector.receiveAndBind(response)) {
+            return new BankingResult(BankingResultType.INTERNAL_ERROR, "서버에 연결할 수 없습니다.");
+        }
+
+        if (response.getStatus() == Status.SUCCESS) {
+            return new BankingResult(BankingResultType.SUCCESS, "고객 업데이트 성공");
         } else {
             return new BankingResult(BankingResultType.FAILED, response.getMessage());
         }

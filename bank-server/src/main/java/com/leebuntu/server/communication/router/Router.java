@@ -87,7 +87,8 @@ public class Router {
                         break mid;
                     } catch (Exception e) {
                         context.reply(new Response(Status.INTERNAL_ERROR, "Internal server error"));
-                        Server.getInstance().printToLog(LogType.ERROR, "Internal server error.\n" + e.getMessage());
+                        Server.getInstance().printToLog(LogType.ERROR,
+                                "Internal server error:\n" + e.getMessage() + "\n");
                     }
                 }
                 activeConnections--;

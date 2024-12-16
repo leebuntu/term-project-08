@@ -73,6 +73,7 @@ public class CustomerProvider {
             int id = (int) row.get(0);
             int customerType = (int) row.get(1);
             String customerId = (String) row.get(2);
+            String password = (String) row.get(3);
 
             if (customerType != CustomerType.CUSTOMER.ordinal()) {
                 continue;
@@ -90,7 +91,7 @@ public class CustomerProvider {
             String phone = (String) userInfoRow.get(3);
             int creditScore = (int) userInfoRow.get(4);
 
-            customers.add(new Customer(id, name, customerId, "", address, phone, creditScore));
+            customers.add(new Customer(id, name, customerId, password, address, phone, creditScore));
         }
 
         return customers;
@@ -117,5 +118,28 @@ public class CustomerProvider {
         String query = "DELETE FROM user WHERE id = ?";
         QueryResult result = customerDB.execute(query, customerId);
         return result.getQueryStatus() == QueryStatus.SUCCESS;
+    }
+
+    public static boolean updateCustomer(Customer customer) {
+        customerDB.beginTransaction();
+
+        String query = "UPDATE FROM user password = ? WHERE id = ?";
+        QueryResult result = customerDB.execute(query, customer.getPassword(), customer.getId());
+        if (result.getQueryStatus() != QueryStatus.SUCCESS) {
+            customerDB.endTransaction();
+            return false;
+        }
+
+        query = "UPDATE FROM user_info name = ?, address = ?, phone = ?, credit_score = ? WHERE id = ?";
+        result = customerDB.execute(query, customer.getName(), customer.getAddress(), customer.getPhone(),
+                customer.getCreditScore(), customer.getId());
+        if (result.getQueryStatus() != QueryStatus.SUCCESS) {
+            customerDB.endTransaction();
+            return false;
+        }
+
+        customerDB.endTransaction();
+
+        return true;
     }
 }

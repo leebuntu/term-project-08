@@ -38,8 +38,6 @@ public class Server extends JFrame implements ActionListener {
 
     private Thread userCountThread;
 
-    private boolean isRunning;
-
     private static Server instance = null;
 
     public static Server getInstance() {
@@ -130,11 +128,15 @@ public class Server extends JFrame implements ActionListener {
                     JWTMiddleware.getJWTMiddleware());
             router.addRoute("/admin/customers/delete", CustomerHandler.deleteCustomer(),
                     JWTMiddleware.getJWTMiddleware());
+            router.addRoute("/admin/customers/update", CustomerHandler.updateCustomer(),
+                    JWTMiddleware.getJWTMiddleware());
 
             router.addRoute("/admin/accounts/create", AccountHandler.createAccount(), JWTMiddleware.getJWTMiddleware());
             router.addRoute("/admin/accounts/get", AccountHandler.getAccount(), JWTMiddleware.getJWTMiddleware());
             router.addRoute("/admin/accounts/get/all", AccountHandler.getAllAccounts(),
                     JWTMiddleware.getJWTMiddleware());
+            router.addRoute("/admin/accounts/delete", AccountHandler.deleteAccount(), JWTMiddleware.getJWTMiddleware());
+            router.addRoute("/admin/accounts/update", AccountHandler.updateAccount(), JWTMiddleware.getJWTMiddleware());
 
             router.addRoute("/login", LoginHandler.getLoginHandler());
 

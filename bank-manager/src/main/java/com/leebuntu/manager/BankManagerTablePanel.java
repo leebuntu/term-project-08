@@ -14,19 +14,23 @@ import java.awt.*;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class BankManagerTablePanel {
     private JPanel tablePanel;
     JTable table;
     DefaultTableModel tableModel;
-    DefaultTableModel accountModel;
-    private int selectedUser = -1;
+    private int selectedIndex = -1;
+    private int selectedId = -1;
+    private String selectedAccountNumber = null;
+    private int currentMode = 0; // 0: 초기, 1: 사용자 리스트 2: 계좌 리스트
     private ArrayList<String[]> customerData;
-    boolean isLoggedIn = false;
     boolean isEditable = false; // 추가: 테이블 수정 가능 여부
     String token;
 
-    String[] columnNames = { "ID", "Name", "CustomerID", "Address", "Phone", "신용점수" };
+    private List<List<Object>> originalTable;
+
+    String[] columnNames = { "ID", "Name", "CustomerID", "Password", "Address", "Phone", "신용점수" };
     String[] accountColumns = { "ID", "고객 ID", "계좌 번호", "잔액", "출금 가능 금액", "계좌 개설일", "연결 예금 계좌", "이자율", "최대 자동 이체 금액" };
 
     public BankManagerTablePanel() {
@@ -64,28 +68,60 @@ public class BankManagerTablePanel {
                 // 행이 선택될 경우
                 if (rowIndex != -1) {
                     // Name 열의 값 저장
-                    selectedUser = Integer.parseInt((String) table.getValueAt(rowIndex, 0));
+                    selectedIndex = rowIndex;
+                    selectedId = Integer.parseInt((String) table.getValueAt(rowIndex, 0));
+                    selectedAccountNumber = (String) table.getValueAt(rowIndex, 2);
                 } else {
                     // 선택이 해제된 경우
-                    selectedUser = -1;
-
+                    selectedId = -1;
+                    selectedIndex = -1;
+                    selectedAccountNumber = null;
                 }
             }
         });
 
         // 수정버튼 패널 생성
         JPanel fixPanel = new JPanel();
-        JButton ableFixButton = new JButton("수정가능");
+        JButton ableFixButton = new JButton("수정");
         ableFixButton.setSize(10, 5);
         ableFixButton.addActionListener((e) -> {
             isEditable = true;
+
+            this.originalTable = new ArrayList<>();
+
+            for (int row = 0; row < table.getRowCount(); row++) {
+                List<Object> rowData = new ArrayList<>();
+                for (int col = 0; col < table.getColumnCount(); col++) {
+                    rowData.add(table.getValueAt(row, col));
+                }
+                this.originalTable.add(rowData);
+            }
             table.repaint();
         });
 
-        JButton inableFixButton = new JButton("수정불가");
+        JButton inableFixButton = new JButton("수정완료");
         inableFixButton.setSize(10, 5);
         inableFixButton.addActionListener((e) -> {
             isEditable = false;
+
+            for (int row = 0; row < table.getRowCount(); row++) {
+                for (int col = 0; col < table.getColumnCount(); col++) {
+                    Object original = originalTable.get(row).get(col);
+                    Object current = table.getValueAt(row, col);
+                    if (!Objects.equals(original, current)) {
+                        String[] rowData = new String[table.getColumnCount()];
+                        for (int i = 0; i < table.getColumnCount(); i++) {
+                            rowData[i] = (String) table.getValueAt(row, i);
+                        }
+                        if (currentMode == 1) {
+                            updateCustomer(rowData);
+                        } else if (currentMode == 2) {
+                            updateAccount(rowData);
+                        }
+                        break;
+                    }
+                }
+            }
             table.repaint();
         });
 
@@ -106,6 +142,32 @@ public class BankManagerTablePanel {
         table.getColumnModel().getColumn(0).setPreferredWidth(20);
     }
 
+    public BankingResult updateCustomer(String[] customerRowData) {
+        Customer customer = new Customer();
+        customer.setId(Integer.parseInt(customerRowData[0]));
+        customer.setName(customerRowData[1]);
+        customer.setCustomerId(customerRowData[2]);
+        customer.setPassword(customerRowData[3]);
+        customer.setAddress(customerRowData[4]);
+        customer.setPhone(customerRowData[5]);
+        customer.setCreditScore(Integer.parseInt(customerRowData[6]));
+        return BankManagerConnector.updateCustomer(token, customer);
+    }
+
+    public BankingResult updateAccount(String[] accountRowData) {
+        Account account = new Account();
+        account.setId(Integer.parseInt(accountRowData[0]));
+        account.setCustomerId(Integer.parseInt(accountRowData[1]));
+        account.setAccountNumber(accountRowData[2]);
+        account.setTotalBalance(Long.parseLong(accountRowData[3]));
+        account.setAvailableBalance(Long.parseLong(accountRowData[4]));
+        account.setOpenDate(Instant.parse(accountRowData[5]).toEpochMilli());
+        account.setLinkedSavingsAccountNumber(accountRowData[6]);
+        account.setInterestRate(Double.parseDouble(accountRowData[7]));
+        account.setMaxTransferAmountToChecking(Long.parseLong(accountRowData[8]));
+        return BankManagerConnector.updateAccount(token, account);
+    }
+
     ArrayList<String[]> getCustomers() {
         ArrayList<String[]> customerData = new ArrayList<>();
         BankingResult result = BankManagerConnector.getCustomers(token);
@@ -117,6 +179,7 @@ public class BankManagerTablePanel {
             customerData.add(new String[] { String.valueOf(customer.getId()),
                     customer.getName(),
                     customer.getCustomerId(),
+                    customer.getPassword(),
                     customer.getAddress(),
                     customer.getPhone(),
                     String.valueOf(customer.getCreditScore()) });
@@ -130,6 +193,28 @@ public class BankManagerTablePanel {
         if (result.getType() != BankingResultType.SUCCESS) {
             return null;
         }
+        List<Account> accounts = (List<Account>) result.getData();
+        for (Account account : accounts) {
+            accountData.add(new String[] { String.valueOf(account.getId()),
+                    String.valueOf(account.getCustomerId()), account.getAccountNumber(),
+                    String.valueOf(account.getTotalBalance()),
+                    String.valueOf(account.getAvailableBalance()),
+                    Instant.ofEpochMilli(account.getOpenDate()).toString(),
+                    account.getLinkedSavingsAccountNumber(),
+                    String.valueOf(account.getInterestRate()),
+                    String.valueOf(account.getMaxTransferAmountToChecking()) });
+        }
+
+        return accountData;
+    }
+
+    ArrayList<String[]> getAccountsByCustomerId(int customerId) {
+        ArrayList<String[]> accountData = new ArrayList<>();
+        BankingResult result = BankManagerConnector.getAccountsByCustomerId(token, customerId);
+        if (result.getType() != BankingResultType.SUCCESS) {
+            return null;
+        }
+
         List<Account> accounts = (List<Account>) result.getData();
         for (Account account : accounts) {
             accountData.add(new String[] { String.valueOf(account.getId()),
@@ -159,32 +244,24 @@ public class BankManagerTablePanel {
         return selectAccount;
     }
 
-    private String[][] convertTo2DArray(ArrayList<String[]> data) {
-        if (data == null || data.isEmpty()) {
-            return new String[0][];
-        }
-        return data.toArray(new String[0][]);
-    }
-
-    // 사용자 데이터를 테이블에 출력
-    // 계좌 데이터를 테이블에 출력
-    public void updateAccountTable(ArrayList<String[]> accountData) {
-        String[][] data = convertTo2DArray(accountData);
-        updateTable(data, accountColumns);
-    }
-
     // 사용자 정보를 누르면 다른 화면에서 다시 사용자 정보들이 있는 화면으로 오게 하는 메서드
-    public void updateTable(String[][] data, String[] columnNames) {
+    public void updateTable(String[][] data, String[] columnNames, int currentMode) {
         tableModel.setDataVector(data, columnNames);
         adjustColumnWidths();
+        this.currentMode = currentMode;
+    }
+
+    public int getCurrentMode() {
+        return currentMode;
     }
 
     // 사용자 추가
-    public void addUser(String[] userData) {
-        BankManagerConnector.createCustomer(token, userData[0], userData[1], userData[2], userData[3], userData[4]);
+    public BankingResult addUser(String[] userData) {
+        return BankManagerConnector.createCustomer(token, userData[0], userData[1], userData[2], userData[3],
+                userData[4]);
     }
 
-    public void addAccount(int userId, String[] accountData) {
+    public BankingResult addAccount(int userId, String[] accountData) {
         if (accountData.length == 4) { // 당좌 계좌
             Account account = new Account();
             account.setCustomerId(userId);
@@ -193,7 +270,7 @@ public class BankManagerTablePanel {
             account.setAvailableBalance(Long.parseLong(accountData[2]));
             account.setAccountType(AccountType.CHECKING);
             account.setLinkedSavingsAccountNumber(accountData[3]);
-            BankManagerConnector.createCheckingAccount(token, account);
+            return BankManagerConnector.createCheckingAccount(token, account);
         } else { // 저축 계좌
             Account account = new Account();
             account.setCustomerId(userId);
@@ -203,14 +280,22 @@ public class BankManagerTablePanel {
             account.setAccountType(AccountType.SAVINGS);
             account.setInterestRate(Double.parseDouble(accountData[3]));
             account.setMaxTransferAmountToChecking(Long.parseLong(accountData[4]));
-            BankManagerConnector.createSavingsAccount(token, account);
+            return BankManagerConnector.createSavingsAccount(token, account);
         }
     }
 
     // JTable에서 행이 클릭이 되었는지 확인
     // 클릭된 정보의 이름 반환(계좌 주인)
-    public int getSelectedUser() {
-        return selectedUser;
+    public int getSelectedId() {
+        return selectedId;
+    }
+
+    public String getSelectedAccountNumber() {
+        return selectedAccountNumber;
+    }
+
+    public int getSelectedIndex() {
+        return selectedIndex;
     }
 
     // 수정된 사용자/계좌 셀을 저장하는 메서드
@@ -221,18 +306,16 @@ public class BankManagerTablePanel {
         }
     }
 
-    // 지우고 싶은 사용자의 row를 선택하고 사용자 삭제를 누르면 해당 데이터 JTable패널에서 삭제
-    // 필수 메소드
-    // TODO: 서버에서 삭제 따로 진행
-    public void deleteSelectedRow() {
-        int selectedRow = table.getSelectedRow();
-        if (selectedRow != -1) {
-            tableModel.removeRow(selectedRow);
-            selectedUser = -1;
-        }
-    }
-
     public JPanel getPanel() {
         return tablePanel;
     }
+
+    public BankingResult deleteSelectedAccount(String accountNumber) {
+        return BankManagerConnector.deleteAccount(token, accountNumber);
+    }
+
+    public BankingResult deleteSelectedCustomer(int customerId) {
+        return BankManagerConnector.deleteCustomer(token, customerId);
+    }
+
 }

@@ -44,7 +44,7 @@ public class PanLoan extends JPanel implements ActionListener, Pan {
         Label_Account.setFont(new Font("맑은 고딕", Font.PLAIN, 14));
         add(Label_Account);
 
-        Combo_Accounts = new JComboBox<>(new String[] { "계좌1", "계좌2", "계좌3", "계좌4", "계좌5" });
+        Combo_Accounts = new JComboBox<>();
         Combo_Accounts.setBounds(200, 70, 250, 30);
         Combo_Accounts.setFont(new Font("맑은 고딕", Font.PLAIN, 14));
         add(Combo_Accounts);
@@ -94,10 +94,15 @@ public class PanLoan extends JPanel implements ActionListener, Pan {
     }
 
     @Override
+    public void backToMain() {
+        this.setVisible(false);
+        MainFrame.display("Main");
+    }
+
+    @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == Btn_Close) {
-            this.setVisible(false);
-            MainFrame.display("Main");
+            backToMain();
         } else if (e.getSource() == Btn_RequestReview) {
             JOptionPane.showMessageDialog(this, "대출 심사를 요청했습니다.", "알림", JOptionPane.INFORMATION_MESSAGE);
         } else if (e.getSource() == Btn_GetLoan) {

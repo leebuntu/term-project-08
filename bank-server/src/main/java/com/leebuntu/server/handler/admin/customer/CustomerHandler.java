@@ -23,12 +23,12 @@ public class CustomerHandler {
             CreateCustomer request = new CreateCustomer();
 
             if (context.bind(request)) {
-                Customer customer = new Customer();
-                customer.setName(request.getCustomer().getName());
-                customer.setCustomerId(request.getCustomer().getCustomerId());
-                customer.setPassword(request.getCustomer().getPassword());
-                customer.setAddress(request.getCustomer().getAddress());
-                customer.setPhone(request.getCustomer().getPhone());
+                Customer customer = request.getCustomer();
+
+                if (!customer.validate()) {
+                    context.reply(new Response(Status.FAILED, "Invalid customer data"));
+                    return;
+                }
 
                 int customerId = CustomerProvider.createCustomer(customer);
                 if (customerId != -1) {
@@ -75,6 +75,32 @@ public class CustomerHandler {
                 }
             } else {
                 context.reply(new Response(Status.FAILED, "Failed to delete customer"));
+            }
+        };
+    }
+
+    public static ContextHandler updateCustomer() {
+        return (context) -> {
+            if (!CustomerProvider.isAdmin((int) context.getField("userId"))) {
+                context.reply(new Response(Status.NOT_AUTHORIZED, "Unauthorized"));
+                return;
+            }
+
+            CreateCustomer request = new CreateCustomer();
+
+            if (context.bind(request)) {
+                Customer customer = request.getCustomer();
+
+                if (!customer.validate()) {
+                    context.reply(new Response(Status.FAILED, "Invalid customer data"));
+                    return;
+                }
+
+                if (CustomerProvider.updateCustomer(customer)) {
+                    context.reply(new Response(Status.SUCCESS, "Customer updated successfully"));
+                } else {
+                    context.reply(new Response(Status.FAILED, "Failed to update customer"));
+                }
             }
         };
     }

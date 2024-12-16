@@ -84,10 +84,16 @@ public class PanViewAccount extends JPanel implements ActionListener, Pan {
 
         accounts = (List<Account>) result.getData();
         for (Account account : accounts) {
-            Combo_Accounts.addItem(account.getAccountNumber());
+            Combo_Accounts.addItem(account.getAccountNumber() + ", " + account.getAccountType().getDescription());
         }
 
-        GetBalance(0);
+        updateBalance(0);
+    }
+
+    @Override
+    public void backToMain() {
+        this.setVisible(false);
+        MainFrame.display("Main");
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -98,16 +104,16 @@ public class PanViewAccount extends JPanel implements ActionListener, Pan {
             if (Combo_Accounts.getSelectedIndex() == -1) {
                 return;
             }
-            GetBalance(Combo_Accounts.getSelectedIndex());
+            updateBalance(Combo_Accounts.getSelectedIndex());
         }
     }
 
-    public void GetBalance(int index) {
+    public void updateBalance(int index) {
         if (accounts == null || accounts.isEmpty()) {
             return;
         }
 
-        Long balance = accounts.get(index).getTotalBalance();
+        long balance = accounts.get(index).getTotalBalance();
 
         BankingResult result = BankConnector.getTransactions(MainFrame.token,
                 accounts.get(index).getAccountNumber());

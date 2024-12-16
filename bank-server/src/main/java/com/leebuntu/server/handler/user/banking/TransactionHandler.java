@@ -18,7 +18,7 @@ public class TransactionHandler {
 
             GetTransactions request = new GetTransactions();
             if (context.bind(request)) {
-                if (!AccountProvider.isAcountOwner(request.getAccountNumber(), userId)) {
+                if (!AccountProvider.isAccountOwner(request.getAccountNumber(), userId)) {
                     context.reply(new Response(Status.NOT_AUTHORIZED, "Unauthorized"));
                     return;
                 }

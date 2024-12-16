@@ -28,7 +28,7 @@ public class AccountProvider {
         return result.getRowCount() > 0;
     }
 
-    public static boolean isAcountOwner(String accountNumber, int userId) {
+    public static boolean isAccountOwner(String accountNumber, int userId) {
         String typeName = getAccountType(accountNumber).name().toLowerCase();
         String query = "SELECT customer_id FROM " + typeName + "_account WHERE account_number = ?";
         QueryResult result = accountDB.execute(query, accountNumber);
@@ -127,6 +127,24 @@ public class AccountProvider {
             accounts.add(new Account((int) row.get(0), (int) row.get(1), (String) row.get(2), (Long) row.get(3),
                     (Long) row.get(4), (Long) row.get(5), AccountType.SAVINGS, "", (double) row.get(6),
                     (Long) row.get(7)));
+        }
+
+        return accounts;
+    }
+
+    public static List<Account> getAccountByLinkedSavingsAccountNumber(String linkedSavingsAccountNumber) {
+        String query = "SELECT * FROM checking_account WHERE linked_savings_account_number = ?";
+        QueryResult result = accountDB.execute(query, linkedSavingsAccountNumber);
+        List<Account> accounts = new ArrayList<>();
+
+        if (result.getQueryStatus() != QueryStatus.SUCCESS && result.getQueryStatus() != QueryStatus.NOT_FOUND) {
+            return new ArrayList<>();
+        }
+
+        while (result.next()) {
+            List<Object> row = result.getCurrentRow();
+            accounts.add(new Account((int) row.get(0), (int) row.get(1), (String) row.get(2), (Long) row.get(3),
+                    (Long) row.get(4), (Long) row.get(5), AccountType.CHECKING, (String) row.get(6), 0.0, 0L));
         }
 
         return accounts;

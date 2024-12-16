@@ -28,7 +28,7 @@ public class AccountHandler {
 
             DepositWithdraw request = new DepositWithdraw();
             if (context.bind(request)) {
-                if (!AccountProvider.isAcountOwner(request.getAccountNumber(), userId)) {
+                if (!AccountProvider.isAccountOwner(request.getAccountNumber(), userId)) {
                     context.reply(new Response(Status.NOT_AUTHORIZED, "Unauthorized"));
                     return;
                 }
@@ -62,7 +62,7 @@ public class AccountHandler {
 
             DepositWithdraw request = new DepositWithdraw();
             if (context.bind(request)) {
-                if (!AccountProvider.isAcountOwner(request.getAccountNumber(), userId)) {
+                if (!AccountProvider.isAccountOwner(request.getAccountNumber(), userId)) {
                     context.reply(new Response(Status.NOT_AUTHORIZED, "Unauthorized"));
                     return;
                 }
