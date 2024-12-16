@@ -1,7 +1,6 @@
 package com.leebuntu.server.db.core;
 
 import com.leebuntu.server.db.core.file.DataFileManager;
-import com.leebuntu.server.db.core.transaction.Transaction;
 import com.leebuntu.server.db.core.transaction.TransactionManager;
 import com.leebuntu.server.db.query.Query;
 import com.leebuntu.server.db.query.QueryResult;

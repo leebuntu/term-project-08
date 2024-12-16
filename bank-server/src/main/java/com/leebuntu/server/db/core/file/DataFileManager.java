@@ -71,7 +71,8 @@ public class DataFileManager {
 
 		List<LinkedHashMap<Column, byte[]>> results = new ArrayList<>();
 
-		try (FileChannel channel = new RandomAccessFile(dbFileHandle, "r").getChannel()) {
+		try (RandomAccessFile raf = new RandomAccessFile(dbFileHandle, "r");
+				FileChannel channel = raf.getChannel()) {
 			MappedByteBuffer buffer = channel.map(FileChannel.MapMode.READ_ONLY, metadataSize,
 					channel.size() - metadataSize);
 

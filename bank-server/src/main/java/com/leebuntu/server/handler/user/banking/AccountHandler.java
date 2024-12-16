@@ -13,15 +13,11 @@ import com.leebuntu.common.banking.dto.response.banking.Accounts;
 import com.leebuntu.server.communication.router.ContextHandler;
 import com.leebuntu.server.provider.AccountProvider;
 import com.leebuntu.server.provider.TransactionProvider;
-import com.leebuntu.server.db.core.Database;
-import com.leebuntu.server.db.core.DatabaseManager;
 
 import java.time.Instant;
 import java.util.List;
 
 public class AccountHandler {
-    private static final Database accountDB = DatabaseManager.getDB("accounts");
-
     public static ContextHandler withdraw() {
         return (context) -> {
             int userId = (int) context.getField("userId");

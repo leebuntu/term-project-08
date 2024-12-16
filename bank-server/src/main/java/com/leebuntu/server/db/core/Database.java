@@ -1,13 +1,11 @@
 package com.leebuntu.server.db.core;
 
 import com.leebuntu.server.db.core.file.DataFileManager;
-import com.leebuntu.server.db.core.transaction.Transaction;
 import com.leebuntu.server.db.core.transaction.TransactionManager;
 import com.leebuntu.server.db.query.Query;
 import com.leebuntu.server.db.query.QueryParser;
 import com.leebuntu.server.db.query.QueryResult;
 import com.leebuntu.server.db.query.enums.QueryStatus;
-import com.leebuntu.server.db.query.enums.QueryType;
 import com.leebuntu.server.db.storage.Metadata;
 
 import java.io.DataInputStream;
