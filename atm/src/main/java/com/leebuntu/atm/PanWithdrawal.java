@@ -167,20 +167,20 @@ public class PanWithdrawal extends JPanel implements ActionListener, Pan {
             if (result.getType() != BankingResultType.SUCCESS) {
                 SwingUtilities.invokeLater(() -> {
                     JOptionPane.showMessageDialog(null, result.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);
+                    backToMain();
                 });
-                backToMain();
                 return;
             }
 
             SwingUtilities.invokeLater(() -> {
                 JOptionPane.showMessageDialog(null, "출금 성공", "SUCCESS", JOptionPane.INFORMATION_MESSAGE);
+                backToMain();
             });
-            backToMain();
         } catch (NumberFormatException ex) {
             SwingUtilities.invokeLater(() -> {
                 JOptionPane.showMessageDialog(null, "유효한 금액을 입력하세요.", "ERROR", JOptionPane.ERROR_MESSAGE);
+                backToMain();
             });
-            backToMain();
         }
     }
 }

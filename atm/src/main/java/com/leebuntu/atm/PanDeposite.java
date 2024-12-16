@@ -145,21 +145,21 @@ public class PanDeposite extends JPanel implements ActionListener, Pan {
             if (result.getType() != BankingResultType.SUCCESS) {
                 SwingUtilities.invokeLater(() -> {
                     JOptionPane.showMessageDialog(null, result.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);
+                    backToMain();
                 });
-                backToMain();
                 return;
             }
 
             SwingUtilities.invokeLater(() -> {
                 JOptionPane.showMessageDialog(null, "입금 성공", "SUCCESS", JOptionPane.INFORMATION_MESSAGE);
+                backToMain();
             });
-            backToMain();
 
         } catch (NumberFormatException ex) {
             SwingUtilities.invokeLater(() -> {
                 JOptionPane.showMessageDialog(null, "입금 금액을 정확히 입력해주세요.", "ERROR", JOptionPane.ERROR_MESSAGE);
+                backToMain();
             });
-            backToMain();
         }
     }
 }

@@ -43,6 +43,9 @@ public class AccountHandler {
                         && account.getAvailableBalance() >= request.getAmount()) {
                     if (AccountProvider.updateAccountBalance(request.getAccountNumber(),
                             account.getTotalBalance() - request.getAmount())) {
+                        Transaction transaction = new Transaction(userId, -1, request.getAccountNumber(), "ATM",
+                                request.getAmount(), Instant.now().toEpochMilli());
+                        TransactionProvider.addTransaction(transaction);
                         context.reply(new Response(Status.SUCCESS, "Withdraw successful"));
                     } else {
                         context.reply(new Response(Status.FAILED, "Failed to update account balance"));
@@ -75,6 +78,9 @@ public class AccountHandler {
 
                 if (AccountProvider.updateAccountBalance(request.getAccountNumber(),
                         account.getTotalBalance() + request.getAmount())) {
+                    Transaction transaction = new Transaction(-1, userId, "ATM",
+                            request.getAccountNumber(), request.getAmount(), Instant.now().toEpochMilli());
+                    TransactionProvider.addTransaction(transaction);
                     context.reply(new Response(Status.SUCCESS, "Deposit successful"));
                 } else {
                     context.reply(new Response(Status.FAILED, "Failed to update account balance"));

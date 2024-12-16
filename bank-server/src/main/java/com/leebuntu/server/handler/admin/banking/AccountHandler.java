@@ -73,6 +73,8 @@ public class AccountHandler {
 
                 BankingResult result = null;
 
+                account.setOpenDate(Instant.now().toEpochMilli());
+
                 try {
                     if (account.getAccountType() == AccountType.CHECKING) {
                         result = createCheckingAccount(account);
