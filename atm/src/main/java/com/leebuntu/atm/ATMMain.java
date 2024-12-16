@@ -155,7 +155,7 @@ public class ATMMain extends JFrame implements ActionListener {
             Pan_Transfer.updateAccounts();
         } else if (e.getSource() == Btn_Login) {
             if (token != null) {
-                display("Main");
+                JOptionPane.showMessageDialog(null, "이미 로그인되었습니다.", "ERROR", JOptionPane.ERROR_MESSAGE);
             } else {
                 display("Login");
             }

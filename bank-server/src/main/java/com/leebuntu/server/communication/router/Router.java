@@ -20,6 +20,7 @@ public class Router {
     private HashMap<String, ContextHandler> routerMap;
     private HashMap<String, List<Middleware>> routerMiddlewareMap;
     private ServerSocket serverSocket;
+    private List<Socket> sockets;
     private boolean isRunning = false;
     private int activeConnections = 0;
 
@@ -27,6 +28,7 @@ public class Router {
         routerMap = new HashMap<>();
         routerMiddlewareMap = new HashMap<>();
         serverSocket = new ServerSocket(port);
+        sockets = new ArrayList<>();
     }
 
     public void addRoute(String route, ContextHandler handler, Middleware... middlewares) {
@@ -40,6 +42,23 @@ public class Router {
     public void stop() {
         isRunning = false;
         activeConnections = 0;
+        try {
+            serverSocket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        for (Socket socket : sockets) {
+            try {
+                socket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private String getIp(Socket socket) {
+        InetAddress address = socket.getInetAddress();
+        return address.getHostAddress();
     }
 
     private void handle(Socket socket) {
@@ -92,16 +111,16 @@ public class Router {
                     }
                 }
                 activeConnections--;
-                InetAddress address = socket.getInetAddress();
-                String ip = address.getHostAddress();
-                Server.getInstance().printToLog(LogType.INFO, "Connection closed from: " + ip);
+                Server.getInstance().printToLog(LogType.INFO, "Connection closed from: " + getIp(socket));
                 break;
             }
+
+            Server.getInstance().printToLog(LogType.INFO, "Connection closed from: " + getIp(socket));
+            socket.close();
+
         } catch (IOException e) {
             activeConnections--;
-            InetAddress address = socket.getInetAddress();
-            String ip = address.getHostAddress();
-            Server.getInstance().printToLog(LogType.INFO, "Connection closed from: " + ip);
+            Server.getInstance().printToLog(LogType.INFO, "Connection closed from: " + getIp(socket));
         }
 
     }
@@ -113,9 +132,8 @@ public class Router {
                 try {
                     Socket socket = serverSocket.accept();
                     new Thread(() -> handle(socket)).start();
-                    InetAddress address = socket.getInetAddress();
-                    String ip = address.getHostAddress();
-                    Server.getInstance().printToLog(LogType.INFO, "New connection from: " + ip);
+                    Server.getInstance().printToLog(LogType.INFO, "New connection from: " + getIp(socket));
+                    sockets.add(socket);
                     activeConnections++;
                 } catch (IOException e) {
                     e.printStackTrace();
