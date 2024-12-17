@@ -134,8 +134,7 @@ public class Router {
                     Server.getInstance().printToLog(LogType.INFO, "New connection from: " + getIp(socket));
                     sockets.add(socket);
                     activeConnections++;
-                } catch (IOException e) {
-                    e.printStackTrace();
+                } catch (Exception e) {
                 }
             }
         }).start();

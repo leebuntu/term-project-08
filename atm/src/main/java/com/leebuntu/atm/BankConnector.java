@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class BankConnector {
-	private static Connector connector = new Connector("localhost", 8080);
+	private static Connector connector = new Connector("bank.leebuntu.com", 8080);
 
 	public static BankingResult login(String id, String password) {
 		Login login = new Login(id, password);

@@ -17,7 +17,7 @@ import com.leebuntu.common.banking.dto.response.customer.Customers;
 import com.leebuntu.manager.communication.Connector;
 
 public class BankManagerConnector {
-    private static Connector connector = new Connector("localhost", 8080);
+    private static Connector connector = new Connector("bank.leebuntu.com", 8080);
 
     public static BankingResult getCustomers(String token) {
         if (!connector.send("/admin/customers/get", token, null)) {

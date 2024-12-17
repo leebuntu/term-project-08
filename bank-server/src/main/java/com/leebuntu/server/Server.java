@@ -28,7 +28,7 @@ public class Server extends JFrame implements ActionListener {
 
     private JLabel Label_UserCount;
     private JLabel Label_UserCount_2;
-    private JToggleButton Btn_StartStop;
+    private JButton Btn_StartStop;
     private JButton Btn_Reset;
     private JTextArea TextArea_Log;
     private JScrollPane sp;
@@ -38,6 +38,8 @@ public class Server extends JFrame implements ActionListener {
     private Thread userCountThread;
 
     private static Server instance = null;
+
+    private boolean isRunning = false;
 
     public static Server getInstance() {
         if (instance == null) {
@@ -79,7 +81,7 @@ public class Server extends JFrame implements ActionListener {
         JPanel bottomPanel = new JPanel();
         bottomPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 10));
 
-        Btn_StartStop = new JToggleButton("시작");
+        Btn_StartStop = new JButton("시작");
         Btn_StartStop.addActionListener(this);
         bottomPanel.add(Btn_StartStop);
 
@@ -175,15 +177,19 @@ public class Server extends JFrame implements ActionListener {
 
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == Btn_StartStop) {
-            if (Btn_StartStop.isSelected()) {
+            if (!isRunning) {
                 startServer();
                 userCountThread = new Thread(this::setUserCount);
                 userCountThread.start();
                 printToLog(LogType.INFO, "서버 시작");
+                Btn_StartStop.setText("중지");
+                isRunning = true;
             } else {
                 userCountThread.interrupt();
                 stopServer();
                 printToLog(LogType.INFO, "서버 종료");
+                Btn_StartStop.setText("시작");
+                isRunning = false;
             }
         } else if (e.getSource() == Btn_Reset) {
             TextArea_Log.setText(null);

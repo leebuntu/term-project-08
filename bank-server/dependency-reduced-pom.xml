@@ -21,7 +21,7 @@
             <configuration>
               <transformers>
                 <transformer>
-                  <mainClass>com.leebuntu.server.ServerMain</mainClass>
+                  <mainClass>com.leebuntu.server.Server</mainClass>
                 </transformer>
               </transformers>
             </configuration>
