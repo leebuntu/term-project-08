@@ -10,6 +10,7 @@ import com.leebuntu.common.banking.dto.request.banking.CreateAccount;
 import com.leebuntu.common.banking.dto.request.banking.RemoveAccount;
 import com.leebuntu.common.banking.dto.request.banking.ViewAccount;
 import com.leebuntu.common.banking.dto.response.banking.Accounts;
+import com.leebuntu.server.Constants;
 import com.leebuntu.server.communication.router.ContextHandler;
 import com.leebuntu.server.db.core.Database;
 import com.leebuntu.server.db.core.DatabaseManager;
@@ -20,7 +21,7 @@ import java.time.Instant;
 import java.util.List;
 
 public class AccountHandler {
-    private static final Database accountDB = DatabaseManager.getDB("accounts");
+    private static final Database accountDB = DatabaseManager.getDB(Constants.ACCOUNT_DB_NAME);
 
     private static BankingResult createCheckingAccount(Account account) {
         if (AccountProvider.isAccountNumberExist(account.getAccountNumber())) {

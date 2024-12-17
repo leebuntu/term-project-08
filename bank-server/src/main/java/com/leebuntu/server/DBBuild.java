@@ -25,7 +25,8 @@ public class DBBuild {
         userInfoTable.addColumn(new Column(ColumnType.VARCHAR, 16, "phone"));
         userInfoTable.addColumn(new Column(ColumnType.INT, "credit_score"));
 
-        return builder.setDatabaseName("customers").addTable(userTable).addTable(userInfoTable).create();
+        return builder.setDatabaseName(Constants.CUTOMER_DB_NAME).addTable(userTable).addTable(userInfoTable)
+                .create(Constants.DB_ROOT_PATH);
     }
 
     public static boolean buildAccountsDB() throws IOException {
@@ -50,7 +51,8 @@ public class DBBuild {
         savingsAccountTable.addColumn(new Column(ColumnType.DOUBLE, "interest_rate"));
         savingsAccountTable.addColumn(new Column(ColumnType.LONG, "max_transfer_amount_to_checking"));
 
-        return builder.setDatabaseName("accounts").addTable(accountTable).addTable(savingsAccountTable).create();
+        return builder.setDatabaseName(Constants.ACCOUNT_DB_NAME).addTable(accountTable).addTable(savingsAccountTable)
+                .create(Constants.DB_ROOT_PATH);
     }
 
     public static boolean buildTransactionsDB() throws IOException {
@@ -74,23 +76,8 @@ public class DBBuild {
         savingsTransactionTable.addColumn(new Column(ColumnType.LONG, "amount"));
         savingsTransactionTable.addColumn(new Column(ColumnType.LONG, "date"));
 
-        return builder.setDatabaseName("transactions").addTable(checkingTransactionTable)
+        return builder.setDatabaseName(Constants.TRANSACTION_DB_NAME).addTable(checkingTransactionTable)
                 .addTable(savingsTransactionTable)
-                .create();
-    }
-
-    public static boolean buildLoansDB() throws IOException {
-        DatabaseBuilder builder = new DatabaseBuilder();
-
-        Table loanTable = new Table("loan");
-        loanTable.addColumn(new Column(ColumnType.INT, true, "id"));
-        loanTable.addColumn(new Column(ColumnType.INT, "customer_id"));
-        loanTable.addColumn(new Column(ColumnType.VARCHAR, 20, "account_number"));
-        loanTable.addColumn(new Column(ColumnType.LONG, "amount"));
-        loanTable.addColumn(new Column(ColumnType.LONG, "date"));
-        loanTable.addColumn(new Column(ColumnType.LONG, "due_date"));
-        loanTable.addColumn(new Column(ColumnType.LONG, "interest_rate"));
-
-        return builder.setDatabaseName("loans").addTable(loanTable).create();
+                .create(Constants.DB_ROOT_PATH);
     }
 }

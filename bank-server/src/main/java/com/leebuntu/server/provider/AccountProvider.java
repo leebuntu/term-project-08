@@ -5,13 +5,14 @@ import java.util.List;
 
 import com.leebuntu.common.banking.account.Account;
 import com.leebuntu.common.banking.account.AccountType;
+import com.leebuntu.server.Constants;
 import com.leebuntu.server.db.core.Database;
 import com.leebuntu.server.db.core.DatabaseManager;
 import com.leebuntu.server.db.query.QueryResult;
 import com.leebuntu.server.db.query.enums.QueryStatus;
 
 public class AccountProvider {
-    private static final Database accountDB = DatabaseManager.getDB("accounts");
+    private static final Database accountDB = DatabaseManager.getDB(Constants.ACCOUNT_DB_NAME);
 
     public static boolean isAccountNumberExist(String accountNumber) {
         String query = "SELECT id FROM checking_account WHERE account_number = ?";

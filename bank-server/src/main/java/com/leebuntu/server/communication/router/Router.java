@@ -44,8 +44,7 @@ public class Router {
         activeConnections = 0;
         try {
             serverSocket.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
         }
         for (Socket socket : sockets) {
             try {

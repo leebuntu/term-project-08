@@ -5,13 +5,14 @@ import java.util.List;
 
 import com.leebuntu.common.banking.customer.Customer;
 import com.leebuntu.common.banking.customer.CustomerType;
+import com.leebuntu.server.Constants;
 import com.leebuntu.server.db.core.Database;
 import com.leebuntu.server.db.core.DatabaseManager;
 import com.leebuntu.server.db.query.QueryResult;
 import com.leebuntu.server.db.query.enums.QueryStatus;
 
 public class CustomerProvider {
-    private static final Database customerDB = DatabaseManager.getDB("customers");
+    private static final Database customerDB = DatabaseManager.getDB(Constants.CUTOMER_DB_NAME);
 
     public static boolean isExistUser(int customerId) {
         String query = "SELECT id FROM user WHERE id = ?";

@@ -1,7 +1,5 @@
 package com.leebuntu.server.db.storage;
 
-import com.leebuntu.server.db.util.Config;
-
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -45,13 +43,13 @@ public class DatabaseBuilder {
      * 
      * @throws IOException
      */
-    public boolean create() throws IOException {
+    public boolean create(String rootPath) throws IOException {
         this.metadata = new Metadata();
         for (Table table : this.tables) {
             this.metadata.addTable(table);
         }
 
-        File dbFile = new File(Config.DB_ROOT_PATH + File.separator + this.databaseName + ".db");
+        File dbFile = new File(rootPath + File.separator + this.databaseName + ".db");
         if (!dbFile.exists()) {
             dbFile.createNewFile();
         } else {

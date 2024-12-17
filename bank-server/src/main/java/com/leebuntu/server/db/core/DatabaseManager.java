@@ -1,7 +1,5 @@
 package com.leebuntu.server.db.core;
 
-import com.leebuntu.server.db.util.Config;
-
 import java.io.IOException;
 import java.util.HashMap;
 
@@ -15,19 +13,25 @@ public class DatabaseManager {
      * @return
      * @throws IOException
      */
-    public static Database getDB(String dbName) {
+    public static Database initDB(String rootPath, String dbName) {
         if (dbMap.containsKey(dbName)) {
             return dbMap.get(dbName);
         } else {
             try {
-                Database db = new Database(Config.DB_ROOT_PATH, dbName);
+                Database db = new Database(rootPath, dbName);
                 dbMap.put(dbName, db);
                 return db;
             } catch (IOException e) {
-                e.printStackTrace();
-                return null;
+                throw new IllegalArgumentException(e);
             }
         }
     }
 
+    public static Database getDB(String dbName) {
+        Database db = dbMap.get(dbName);
+        if (db == null) {
+            throw new IllegalArgumentException("Database not found: " + dbName);
+        }
+        return db;
+    }
 }

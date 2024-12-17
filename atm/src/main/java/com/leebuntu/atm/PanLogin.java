@@ -89,6 +89,8 @@ public class PanLogin extends JPanel implements ActionListener {
             String message;
             MainFrame.token = (String) result.getData();
             message = "로그인되었습니다.";
+            Text_ID.setText("");
+            Text_Password.setText("");
             setVisible(false);
             MainFrame.display("Main");
             JOptionPane.showMessageDialog(null, message);
