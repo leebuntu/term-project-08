@@ -13,11 +13,14 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 public class PanViewAccount extends JPanel implements ActionListener, Pan {
     private JLabel Label_Account;
     private JLabel Label_balance;
+    private JLabel Label_Title;
     private JTextField Text_balance; // JTextField로 변경
     private JComboBox<String> Combo_Accounts;
     private List<Account> accounts;
@@ -26,6 +29,9 @@ public class PanViewAccount extends JPanel implements ActionListener, Pan {
     private String[] columnNames = { "출금 계좌", "수신 계좌", "금액", "일시" };
     private JTable Table_Account;
     ATMMain MainFrame;
+
+    private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
+            .withZone(ZoneId.systemDefault());
 
     public PanViewAccount(ATMMain parent) {
         MainFrame = parent;
@@ -36,34 +42,36 @@ public class PanViewAccount extends JPanel implements ActionListener, Pan {
         setLayout(null);
         setBounds(0, 0, 480, 320);
 
+        Label_Title = new JLabel("계좌 조회");
+        Label_Title.setBounds(0, 10, 480, 40);
+        Label_Title.setFont(new Font("맑은 고딕", Font.BOLD, 20));
+        Label_Title.setHorizontalAlignment(JLabel.CENTER);
+        add(Label_Title);
+
         Table_Account = new JTable(new Object[0][0], columnNames);
-        Label_Account = new JLabel("거래 내역");
-        Label_Account.setBounds(0, 150, 100, 20);
-        Label_Account.setHorizontalAlignment(JLabel.CENTER);
-        add(Label_Account);
         JScrollPane scrollPane = new JScrollPane(Table_Account);
-        scrollPane.setBounds(100, 150, 350, 70);
+        scrollPane.setBounds(15, 130, 450, 100);
         add(scrollPane);
 
         Combo_Accounts = new JComboBox<>();
-        Combo_Accounts.setBounds(100, 70, 350, 20);
+        Combo_Accounts.setBounds(100, 60, 350, 20);
         Combo_Accounts.setFont(new Font("맑은 고딕", Font.PLAIN, 14));
         Combo_Accounts.addActionListener(this);
         Combo_Accounts.setSelectedIndex(-1);
         add(Combo_Accounts);
 
         Label_Account = new JLabel("계좌 조회");
-        Label_Account.setBounds(0, 70, 100, 20);
+        Label_Account.setBounds(0, 60, 100, 20);
         Label_Account.setHorizontalAlignment(JLabel.CENTER);
         add(Label_Account);
 
         Label_balance = new JLabel("잔액");
-        Label_balance.setBounds(0, 120, 100, 20);
+        Label_balance.setBounds(0, 90, 100, 20);
         Label_balance.setHorizontalAlignment(JLabel.CENTER);
         add(Label_balance);
 
         Text_balance = new JTextField();
-        Text_balance.setBounds(100, 120, 350, 20);
+        Text_balance.setBounds(100, 90, 350, 20);
         Text_balance.setEditable(false);
         add(Text_balance);
 
@@ -74,7 +82,7 @@ public class PanViewAccount extends JPanel implements ActionListener, Pan {
     }
 
     @Override
-    public void updateAccounts() {
+    public void resetPanel() {
         Combo_Accounts.removeAllItems();
         BankingResult result = BankConnector.getAccounts(MainFrame.token);
         if (result.getType() != BankingResultType.SUCCESS) {
@@ -108,6 +116,14 @@ public class PanViewAccount extends JPanel implements ActionListener, Pan {
         }
     }
 
+    private void adjustColumnWidths() {
+        Table_Account.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        Table_Account.getColumnModel().getColumn(0).setPreferredWidth(100);
+        Table_Account.getColumnModel().getColumn(1).setPreferredWidth(100);
+        Table_Account.getColumnModel().getColumn(2).setPreferredWidth(105);
+        Table_Account.getColumnModel().getColumn(3).setPreferredWidth(140);
+    }
+
     public void updateBalance(int index) {
         if (accounts == null || accounts.isEmpty()) {
             return;
@@ -130,9 +146,10 @@ public class PanViewAccount extends JPanel implements ActionListener, Pan {
                 data[i][0] = transactions.get(i).getSenderAccountNumber();
                 data[i][1] = transactions.get(i).getReceiverAccountNumber();
                 data[i][2] = BankUtils.displayBalance(transactions.get(i).getAmount());
-                data[i][3] = Instant.ofEpochMilli(transactions.get(i).getDate()).toString();
+                data[i][3] = formatter.format(Instant.ofEpochMilli(transactions.get(i).getDate()));
             }
             Table_Account.setModel(new DefaultTableModel(data, columnNames));
+            adjustColumnWidths();
         });
     }
 }

@@ -1,6 +1,5 @@
 package com.leebuntu.common.banking.dto.request.banking;
 
-
 import com.leebuntu.common.communication.dto.Payload;
 
 public class TakeOutLoan extends Payload<TakeOutLoan> {

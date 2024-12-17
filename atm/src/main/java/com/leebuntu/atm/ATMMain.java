@@ -16,7 +16,7 @@ public class ATMMain extends JFrame implements ActionListener {
     private RoundedButton Btn_Login;
     private RoundedButton Btn_Deposite;
     private RoundedButton Btn_Withdrawal;
-    private RoundedButton Btn_Loan;
+    private RoundedButton Btn_Logout;
     private RoundedButton Btn_EnlargeText;
     private JLabel Label_Image;
 
@@ -25,7 +25,8 @@ public class ATMMain extends JFrame implements ActionListener {
     PanDeposite Pan_Deposite;
     PanWithdrawal Pan_Withdrawal;
     PanLogin Pan_Login;
-    PanLoan Pan_Loan;
+
+    private int currentMode = 0;
 
     public String token;
 
@@ -102,13 +103,13 @@ public class ATMMain extends JFrame implements ActionListener {
         Btn_Withdrawal.addActionListener(this);
         backgroundPanel.add(Btn_Withdrawal);
 
-        Btn_Loan = new RoundedButton("대출");
-        Btn_Loan.setFont(new Font("맑은 고딕", Font.BOLD, 14));
-        Btn_Loan.setSize(115, 60);
-        Btn_Loan.setLocation(345, 200);
-        Btn_Loan.addActionListener(this);
-        Btn_Loan.setBackground(Color.WHITE);
-        backgroundPanel.add(Btn_Loan);
+        Btn_Logout = new RoundedButton("로그아웃");
+        Btn_Logout.setFont(new Font("맑은 고딕", Font.BOLD, 14));
+        Btn_Logout.setSize(115, 60);
+        Btn_Logout.setLocation(345, 200);
+        Btn_Logout.addActionListener(this);
+        Btn_Logout.setBackground(Color.WHITE);
+        backgroundPanel.add(Btn_Logout);
 
         Btn_EnlargeText = new RoundedButton("글자 확대");
         Btn_EnlargeText.setFont(new Font("맑은 고딕", Font.BOLD, 30));
@@ -139,20 +140,16 @@ public class ATMMain extends JFrame implements ActionListener {
         add(Pan_Login);
         Pan_Login.setVisible(false);
 
-        Pan_Loan = new PanLoan(this);
-        add(Pan_Loan);
-        Pan_Loan.setVisible(false);
-
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == Btn_ViewAccount) {
             display("ViewAccount");
-            Pan_ViewAccount.updateAccounts();
+            Pan_ViewAccount.resetPanel();
         } else if (e.getSource() == Btn_Transfer) {
             display("Transfer");
-            Pan_Transfer.updateAccounts();
+            Pan_Transfer.resetPanel();
         } else if (e.getSource() == Btn_Login) {
             if (token != null) {
                 JOptionPane.showMessageDialog(null, "이미 로그인되었습니다.", "ERROR", JOptionPane.ERROR_MESSAGE);
@@ -161,14 +158,25 @@ public class ATMMain extends JFrame implements ActionListener {
             }
         } else if (e.getSource() == Btn_Deposite) {
             display("Deposite");
-            Pan_Deposite.updateAccounts();
+            Pan_Deposite.resetPanel();
         } else if (e.getSource() == Btn_Withdrawal) {
             display("Withdrawal");
-            Pan_Withdrawal.updateAccounts();
-        } else if (e.getSource() == Btn_Loan) {
-            display("Loan");
+            Pan_Withdrawal.resetPanel();
+        } else if (e.getSource() == Btn_Logout) {
+            if (token == null) {
+                JOptionPane.showMessageDialog(null, "로그인된 상태에서만 사용할 수 있습니다.", "ERROR", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            JOptionPane.showMessageDialog(null, "로그아웃되었습니다.", "ERROR", JOptionPane.ERROR_MESSAGE);
+            token = null;
         } else if (e.getSource() == Btn_EnlargeText) {
-            enlargeButtonText();
+            if (currentMode == 0) {
+                enlargeButtonText();
+                currentMode = 1;
+            } else {
+                resetButtonText();
+                currentMode = 0;
+            }
         }
     }
 
@@ -179,7 +187,17 @@ public class ATMMain extends JFrame implements ActionListener {
         Btn_Login.setFont(largeFont);
         Btn_Deposite.setFont(largeFont);
         Btn_Withdrawal.setFont(largeFont);
-        Btn_Loan.setFont(largeFont);
+        Btn_Logout.setFont(largeFont);
+    }
+
+    private void resetButtonText() {
+        Font normalFont = new Font("맑은 고딕", Font.BOLD, 14);
+        Btn_ViewAccount.setFont(normalFont);
+        Btn_Transfer.setFont(normalFont);
+        Btn_Login.setFont(normalFont);
+        Btn_Deposite.setFont(normalFont);
+        Btn_Withdrawal.setFont(normalFont);
+        Btn_Logout.setFont(normalFont);
     }
 
     public void display(String viewName) {
@@ -198,7 +216,6 @@ public class ATMMain extends JFrame implements ActionListener {
             case "Deposite" -> Pan_Deposite.setVisible(true);
             case "Withdrawal" -> Pan_Withdrawal.setVisible(true);
             case "Login" -> Pan_Login.setVisible(true);
-            case "Loan" -> Pan_Loan.setVisible(true);
             case "Main" -> SetFrameUI(true);
             case " EnlargeText" -> Btn_EnlargeText.setVisible(true);
 
@@ -212,7 +229,6 @@ public class ATMMain extends JFrame implements ActionListener {
         Pan_Deposite.setVisible(false);
         Pan_Withdrawal.setVisible(false);
         Pan_Login.setVisible(false);
-        Pan_Loan.setVisible(false);
         SetFrameUI(true);
         JOptionPane.showMessageDialog(null, "서버에 연결할 수 없습니다.", "ERROR", JOptionPane.ERROR_MESSAGE);
     }
@@ -224,9 +240,9 @@ public class ATMMain extends JFrame implements ActionListener {
         Btn_Login.setVisible(bOn);
         Btn_Deposite.setVisible(bOn);
         Btn_Withdrawal.setVisible(bOn);
-        Btn_Loan.setVisible(bOn);
         Label_Image.setVisible(bOn);
         Btn_EnlargeText.setVisible(bOn);
+        Btn_Logout.setVisible(bOn);
     }
 
     public static void main(String[] args) {

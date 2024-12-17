@@ -79,7 +79,7 @@ public class PanLoan extends JPanel implements ActionListener, Pan {
     }
 
     @Override
-    public void updateAccounts() {
+    public void resetPanel() {
         Combo_Accounts.removeAllItems();
         BankingResult result = BankConnector.getAccounts(MainFrame.token);
         if (result.getType() != BankingResultType.SUCCESS) {

@@ -45,38 +45,39 @@ public class PanWithdrawal extends JPanel implements ActionListener, Pan {
         setBounds(0, 0, 480, 320);
 
         Label_Title = new JLabel("출금");
-        Label_Title.setBounds(0, 0, 480, 40);
+        Label_Title.setBounds(0, 30, 480, 40);
+        Label_Title.setFont(new Font("맑은 고딕", Font.BOLD, 20));
         Label_Title.setHorizontalAlignment(JLabel.CENTER);
         add(Label_Title);
 
         Combo_Accounts = new JComboBox<>();
-        Combo_Accounts.setBounds(100, 70, 350, 20);
+        Combo_Accounts.setBounds(100, 100, 350, 20);
         Combo_Accounts.setFont(new Font("맑은 고딕", Font.PLAIN, 14));
         Combo_Accounts.addActionListener(this);
         add(Combo_Accounts);
 
         Label_Account = new JLabel("계좌 선택");
-        Label_Account.setBounds(0, 70, 100, 20);
+        Label_Account.setBounds(0, 100, 100, 20);
         Label_Account.setHorizontalAlignment(JLabel.CENTER);
         add(Label_Account);
 
         Label_Balance = new JLabel("잔액");
-        Label_Balance.setBounds(0, 100, 100, 20);
+        Label_Balance.setBounds(0, 130, 100, 20);
         Label_Balance.setHorizontalAlignment(JLabel.CENTER);
         add(Label_Balance);
 
         Text_Balance = new JTextField();
-        Text_Balance.setBounds(100, 100, 350, 20);
+        Text_Balance.setBounds(100, 130, 350, 20);
         Text_Balance.setEditable(false);
         add(Text_Balance);
 
         Label_Amount = new JLabel("금액");
-        Label_Amount.setBounds(0, 130, 100, 20);
+        Label_Amount.setBounds(0, 160, 100, 20);
         Label_Amount.setHorizontalAlignment(JLabel.CENTER);
         add(Label_Amount);
 
         Text_Amount = new JTextField();
-        Text_Amount.setBounds(100, 130, 350, 20);
+        Text_Amount.setBounds(100, 160, 350, 20);
         Text_Amount.setEditable(true);
         Text_Amount.setToolTipText("숫자만 입력");
         add(Text_Amount);
@@ -114,7 +115,8 @@ public class PanWithdrawal extends JPanel implements ActionListener, Pan {
     }
 
     @Override
-    public void updateAccounts() {
+    public void resetPanel() {
+        Text_Amount.setText("");
         Combo_Accounts.removeAllItems();
         BankingResult result = BankConnector.getAccounts(MainFrame.token);
         if (result.getType() != BankingResultType.SUCCESS) {
