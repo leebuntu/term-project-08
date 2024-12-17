@@ -88,6 +88,10 @@ public class BankManagerTablePanel {
         JButton ableFixButton = new JButton("수정");
         ableFixButton.setSize(10, 5);
         ableFixButton.addActionListener((e) -> {
+            if (isEditable) {
+                JOptionPane.showMessageDialog(null, "이미 수정 모드입니다.", "오류", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
             isEditable = true;
 
             this.originalTable = new ArrayList<>();
@@ -105,6 +109,10 @@ public class BankManagerTablePanel {
         JButton inableFixButton = new JButton("수정완료");
         inableFixButton.setSize(10, 5);
         inableFixButton.addActionListener((e) -> {
+            if (!isEditable) {
+                JOptionPane.showMessageDialog(null, "수정 모드가 아닙니다.", "오류", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
             isEditable = false;
 
             for (int row = 0; row < table.getRowCount(); row++) {
