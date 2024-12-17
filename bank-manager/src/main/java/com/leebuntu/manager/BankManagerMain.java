@@ -8,7 +8,7 @@ public class BankManagerMain extends JFrame {
         SwingUtilities.invokeLater(() -> {
             JFrame frame = new JFrame("Bank Manager");
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            frame.setSize(900, 500);
+            frame.setSize(1400, 500);
 
             // 카드 레이아웃을 사용하여 버튼을 누르면 그에 해당하는 내용이나 패널을 JTable이 있던 화면에 보여준다.
             CardLayout cardLayout = new CardLayout();
@@ -21,8 +21,8 @@ public class BankManagerMain extends JFrame {
             JPanel nullPanel = new JPanel();
             JTable nulltable = new JTable();
             JScrollPane nullscrollPane = new JScrollPane(nulltable);
-            nullscrollPane.setPreferredSize(new Dimension(600, 700));
-            nullPanel.setBorder(BorderFactory.createTitledBorder("사용자 정보를 불러오세요"));
+            nullscrollPane.setPreferredSize(new Dimension(1100, 440));
+            nullPanel.setBorder(BorderFactory.createTitledBorder("정보"));
             nullPanel.add(nullscrollPane, BorderLayout.CENTER);
 
             // 카드레이아웃으로 되어있는 패널에 다른 패널들 추가

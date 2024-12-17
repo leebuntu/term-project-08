@@ -41,7 +41,10 @@ public class BankManagerTablePanel {
     private void initializeTable() {
         tableModel = new DefaultTableModel(columnNames, 0) {
             public boolean isCellEditable(int row, int column) {
-                return isEditable; // 수정 가능 여부에 따라 설정
+                if (row != 0) {
+                    return isEditable; // 수정 가능 여부에 따라 설정
+                }
+                return false;
             }
         };
 
@@ -66,7 +69,7 @@ public class BankManagerTablePanel {
             if (!e.getValueIsAdjusting()) { // 이벤트가 연속 호출되는 것을 방지
                 int rowIndex = table.getSelectedRow();
                 // 행이 선택될 경우
-                if (rowIndex != -1) {
+                if (rowIndex != -1 && rowIndex != 0) {
                     // Name 열의 값 저장
                     selectedIndex = rowIndex;
                     selectedId = Integer.parseInt((String) table.getValueAt(rowIndex, 0));
@@ -129,10 +132,10 @@ public class BankManagerTablePanel {
         fixPanel.add(inableFixButton);
 
         JScrollPane scrollPane = new JScrollPane(table);
-        scrollPane.setPreferredSize(new Dimension(600, 700));
+        scrollPane.setPreferredSize(new Dimension(1100, 440));
 
         tablePanel = new JPanel(new BorderLayout());
-        tablePanel.setBorder(BorderFactory.createTitledBorder("사용자 정보"));
+        tablePanel.setBorder(BorderFactory.createTitledBorder("정보"));
         tablePanel.add(scrollPane, BorderLayout.CENTER);
         tablePanel.add(fixPanel, BorderLayout.SOUTH);
     }

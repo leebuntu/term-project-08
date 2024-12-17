@@ -232,8 +232,17 @@ public class BankManagerButtonPanel implements ActionListener {
                     // 고객 ID에 해당하는 계좌 정보 가져오기
                     ArrayList<String[]> selectedAccounts = tablePanel.getAccountsByCustomerId(selectedId);
 
+                    String[][] data = new String[selectedAccounts.size() + 1][selectedAccounts.size() == 0 ? 2
+                            : selectedAccounts.get(0).length];
+                    data[0][0] = "총 보유 잔고";
+                    data[0][1] = String
+                            .valueOf(selectedAccounts.stream().map(s -> s[3]).mapToLong(Long::parseLong).sum());
+                    for (int i = 0; i < selectedAccounts.size(); i++) {
+                        data[i + 1] = selectedAccounts.get(i);
+                    }
+
                     // 계좌 정보를 테이블에 업데이트
-                    tablePanel.updateTable(selectedAccounts.toArray(new String[0][]), tablePanel.accountColumns, 2);
+                    tablePanel.updateTable(data, tablePanel.accountColumns, 2);
 
                     // 다른 화면으로 전환 (예: 계좌 정보 화면)
                     cardLayout.show(mainPanel, "TableView");
