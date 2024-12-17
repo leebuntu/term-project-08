@@ -18,6 +18,7 @@ public class JWTMiddleware {
                 context.reply(new Response(Status.NOT_AUTHORIZED, "Unauthorized"));
                 return false;
             }
+
             context.setField("userId", userId);
             return true;
         };

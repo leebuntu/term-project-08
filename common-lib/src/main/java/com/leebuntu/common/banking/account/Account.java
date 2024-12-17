@@ -136,8 +136,10 @@ public class Account {
         switch (this.accountType) {
             case CHECKING:
                 if (this.linkedSavingsAccountNumber != null) {
-                    if (this.linkedSavingsAccountNumber.length() != 9) {
-                        return false;
+                    if (!this.linkedSavingsAccountNumber.isEmpty()) {
+                        if (this.linkedSavingsAccountNumber.length() != 9) {
+                            return false;
+                        }
                     }
                 }
                 break;

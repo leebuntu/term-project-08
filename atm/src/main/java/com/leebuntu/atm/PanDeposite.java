@@ -94,7 +94,8 @@ public class PanDeposite extends JPanel implements ActionListener, Pan {
 
         accounts = (List<Account>) result.getData();
         for (Account account : accounts) {
-            Combo_Accounts.addItem(account.getAccountNumber() + ", " + account.getAccountType().getDescription());
+            Combo_Accounts.addItem(BankUtils.displayAccountNo(account.getAccountNumber()) + ", "
+                    + account.getAccountType().getDescription());
         }
 
         updateBalance(0);

@@ -112,10 +112,9 @@ public class Router {
                 }
                 activeConnections--;
                 Server.getInstance().printToLog(LogType.INFO, "Connection closed from: " + getIp(socket));
-                break;
+                break top;
             }
 
-            Server.getInstance().printToLog(LogType.INFO, "Connection closed from: " + getIp(socket));
             socket.close();
 
         } catch (IOException e) {

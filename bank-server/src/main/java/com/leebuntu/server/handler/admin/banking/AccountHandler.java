@@ -195,25 +195,20 @@ public class AccountHandler {
 
             if (context.bind(request)) {
                 Account account = request.getAccount();
-                if (account.getAccountNumber() != null) {
-                    if (!account.getAccountNumber().isEmpty() && account.getAccountNumber().length() != 9) {
-                        context.reply(new Response(Status.FAILED, "Invalid account number"));
-                        return;
-                    }
-                    account.setAccountType(AccountProvider.getAccountType(account.getAccountNumber()));
-                }
+                account.setAccountType(AccountProvider.getAccountType(account.getAccountNumber()));
 
                 if (!account.validate()) {
                     context.reply(new Response(Status.FAILED, "Invalid account data"));
                     return;
                 }
+                System.out.println(account.getLinkedSavingsAccountNumber());
 
                 if (account.getAccountType() == AccountType.CHECKING) {
                     if (account.getLinkedSavingsAccountNumber() != null) {
                         if (!account.getLinkedSavingsAccountNumber().isEmpty()) {
                             if (!AccountProvider.isAccountNumberExist(account.getLinkedSavingsAccountNumber())
                                     || !AccountProvider.isAccountOwner(account.getLinkedSavingsAccountNumber(),
-                                            account.getId())) {
+                                            account.getCustomerId())) {
                                 context.reply(new Response(Status.FAILED, "Savings account does not exist"));
                                 return;
                             }
