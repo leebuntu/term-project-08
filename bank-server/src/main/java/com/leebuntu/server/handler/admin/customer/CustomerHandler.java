@@ -12,7 +12,6 @@ import com.leebuntu.server.provider.CustomerProvider;
 import java.util.List;
 
 public class CustomerHandler {
-
     public static ContextHandler createCustomer() {
         return (context) -> {
             if (!CustomerProvider.isAdmin((int) context.getField("userId"))) {
@@ -27,6 +26,11 @@ public class CustomerHandler {
 
                 if (!customer.validate()) {
                     context.reply(new Response(Status.FAILED, "Invalid customer data"));
+                    return;
+                }
+
+                if (CustomerProvider.isCustomerIdExist(customer.getCustomerId())) {
+                    context.reply(new Response(Status.FAILED, "Customer ID already exists"));
                     return;
                 }
 

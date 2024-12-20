@@ -3,7 +3,6 @@ package com.leebuntu.common.banking.dto.request.customer;
 import com.leebuntu.common.communication.dto.Payload;
 
 public class RemoveCustomer extends Payload<RemoveCustomer> {
-
     private int id;
 
     public RemoveCustomer(int id) {

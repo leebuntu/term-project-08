@@ -1,6 +1,5 @@
 package com.leebuntu.common.banking.dto.response.banking;
 
-
 import com.leebuntu.common.banking.Transaction;
 import com.leebuntu.common.communication.dto.Payload;
 import com.leebuntu.common.communication.dto.Response;

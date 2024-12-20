@@ -30,6 +30,12 @@ public class CustomerProvider {
         return (int) result.getCurrentRow().get(0) == CustomerType.ADMIN.ordinal();
     }
 
+    public static boolean isCustomerIdExist(String customerId) {
+        String query = "SELECT id FROM user WHERE customer_id = ?";
+        QueryResult result = customerDB.execute(query, customerId);
+        return result.getRowCount() > 0;
+    }
+
     public static int login(String customerId, String password) {
         String query = "SELECT id, password FROM user WHERE customer_id = ?";
         QueryResult result = customerDB.execute(query, customerId);

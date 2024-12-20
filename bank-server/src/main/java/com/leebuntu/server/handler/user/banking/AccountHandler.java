@@ -87,7 +87,7 @@ public class AccountHandler {
         };
     }
 
-    private static BankingResult checkMoneySufficient(Account account, Account receiverAccount, Long amount) {
+    private static BankingResult checkMoneySufficient(Account account, Long amount) {
         if (account.getTotalBalance() >= amount && account.getAvailableBalance() >= amount) {
             return new BankingResult(BankingResultType.SUCCESS, "Money is sufficient");
         } else {
@@ -105,7 +105,7 @@ public class AccountHandler {
     }
 
     private static BankingResult updateAccount(Account account, Account receiverAccount, Long amount) {
-        BankingResult moneyStatus = checkMoneySufficient(account, receiverAccount, amount);
+        BankingResult moneyStatus = checkMoneySufficient(account, amount);
 
         if (moneyStatus.getType() == BankingResultType.SUCCESS) {
             account.setTotalBalance(account.getTotalBalance() - amount);
